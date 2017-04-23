@@ -13,6 +13,27 @@ TestCase subclass: #IdiomTest
 	poolDictionaries: ''
 	category: 'Idiom-Exercise'!
 
+!IdiomTest methodsFor: 'testing' stamp: 'Masch 4/23/2017 13:27:26'!
+assertBlock: aBlockClosure expectException: aExceptionExpected blocksToAssert: aBlockToAssert
+				
+	[ aBlockClosure value.
+	self fail ]
+		on: aExceptionExpected 
+		do: [ :anError | 
+			aBlockToAssert do: [:assertBlock | self assert: assertBlock ]].
+! !
+
+!IdiomTest methodsFor: 'testing' stamp: 'Masch 4/23/2017 13:33:58'!
+assertBlock: aBlockClosure expectException: aExceptionExpected expectMessageText: anExpectedMessageText blocksToAssert: aBlockToAssert
+				
+	[ aBlockClosure value.
+	self fail ]
+		on: aExceptionExpected 
+		do: [ :anError | 
+			self assert: anExpectedMessageText = anError messageText.
+			aBlockToAssert do: [:assertBlock | self assert: assertBlock ]].
+! !
+
 !IdiomTest methodsFor: 'testing' stamp: 'mario 4/20/2017 21:31:47'!
 assertBlock: aBlockClosure runsFasterThanMilliseconds: milliseconds 
 	| stopWatch |
@@ -22,17 +43,14 @@ assertBlock: aBlockClosure runsFasterThanMilliseconds: milliseconds
 	self assert: (stopWatch millisecondsEllapsed: aBlockClosure ) < milliseconds.
 ! !
 
-!IdiomTest methodsFor: 'testing' stamp: 'mario 4/20/2017 21:33:51'!
+!IdiomTest methodsFor: 'testing' stamp: 'Mario Chacon 4/23/2017 11:53:29'!
 test01AddingCustomerShouldNotTakeMoreThan50Milliseconds
 
 	| customerBook |
 	
 	customerBook := CustomerBook  new.
 	
-	self assertBlock: [customerBook addCustomerNamed: 'John Lennon'.] runsFasterThanMilliseconds: 50
-	
-	
-! !
+	self assertBlock: [customerBook addCustomerNamed: 'John Lennon'.] runsFasterThanMilliseconds: 50! !
 
 !IdiomTest methodsFor: 'testing' stamp: 'mario 4/20/2017 21:32:43'!
 test02RemovingCustomerShouldNotTakeMoreThan100Milliseconds
@@ -48,7 +66,7 @@ test02RemovingCustomerShouldNotTakeMoreThan100Milliseconds
 	
 ! !
 
-!IdiomTest methodsFor: 'testing' stamp: 'HernanWilkinson 5/9/2012 18:12'!
+!IdiomTest methodsFor: 'testing' stamp: 'Masch 4/23/2017 12:10:17'!
 test03CanNotAddACustomerWithEmptyName 
 
 	| customerBook |
@@ -61,6 +79,18 @@ test03CanNotAddACustomerWithEmptyName
 		do: [ :anError | 
 			self assert: anError messageText = CustomerBook customerCanNotBeEmptyErrorMessage.
 			self assert: customerBook isEmpty ]! !
+
+!IdiomTest methodsFor: 'testing' stamp: 'Masch 4/23/2017 13:34:30'!
+test03CanNotAddACustomerWithEmptyName2
+
+	| customerBook |
+			
+	customerBook := CustomerBook new.
+	
+	self assertBlock: [customerBook addCustomerNamed: ''] 
+		expectException: Error 
+		expectMessageText: CustomerBook customerCanNotBeEmptyErrorMessage
+		blocksToAssert: (OrderedCollection with: [customerBook isEmpty]).! !
 
 !IdiomTest methodsFor: 'testing' stamp: 'HernanWilkinson 5/16/2012 16:50'!
 test04CanNotRemoveAndInvalidCustomer
@@ -79,23 +109,25 @@ test04CanNotRemoveAndInvalidCustomer
 			self assert: (customerBook includesCustomerNamed: johnLennon) ]
 ! !
 
+!IdiomTest methodsFor: 'testing' stamp: 'Masch 4/23/2017 13:27:58'!
+test04CanNotRemoveAndInvalidCustomer2
+	
+	| customerBook johnLennon |
+			
+	customerBook := CustomerBook new.
+	johnLennon := 'John Lennon'.
+	customerBook addCustomerNamed: johnLennon.
+	
+	self assertBlock: [customerBook removeCustomerNamed: 'Paul McCartney'] 
+		expectException: NotFound 
+		blocksToAssert: (OrderedCollection with: [customerBook numberOfCustomers = 1] 
+													    with: [customerBook includesCustomerNamed: johnLennon] )! !
+
 "-- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- "!
 
 !classDefinition: 'IdiomTest class' category: #'Idiom-Exercise'!
 IdiomTest class
-	instanceVariableNames: 'test01AddingCustomerShouldNotTakeMoreThan50Milliseconds2 test06'!
-
-!IdiomTest class methodsFor: 'evaluating' stamp: 'mario 4/20/2017 21:08:25'!
-timeEllapsed: aClosure
-	"comment stating purpose of message"
-
-	| millisecondsBeforeRunning millisecondsAfterRunning |
-
-	millisecondsBeforeRunning := Time millisecondClockValue.
-	aClosure value.
-	millisecondsAfterRunning := Time millisecondClockValue.
-
-	^ millisecondsAfterRunning - millisecondsBeforeRunning.! !
+	instanceVariableNames: 'assert test01AddingCustomerShouldNotTakeMoreThan50Milliseconds2 test06 customerBook'!
 
 
 !classDefinition: #CustomerBook category: #'Idiom-Exercise'!
