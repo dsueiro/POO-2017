@@ -13,6 +13,17 @@ TestCase subclass: #IdiomTest
 	poolDictionaries: ''
 	category: 'Idiom-Exercise'!
 
+!IdiomTest methodsFor: 'testing' stamp: 'dhs 4/25/2017 00:45:51'!
+assert: aClosure willRaiseError: error withPostconditions: conditions
+
+	[ aClosure value.
+	self fail ]
+		on: error 
+		do: [ :anError | 
+			conditions do: [ :condition | self assert: (condition value: anError) ]
+		]			
+! !
+
 !IdiomTest methodsFor: 'testing' stamp: 'mario 4/20/2017 21:31:47'!
 assertBlock: aBlockClosure runsFasterThanMilliseconds: milliseconds 
 	| stopWatch |
@@ -48,21 +59,18 @@ test02RemovingCustomerShouldNotTakeMoreThan100Milliseconds
 	
 ! !
 
-!IdiomTest methodsFor: 'testing' stamp: 'HernanWilkinson 5/9/2012 18:12'!
+!IdiomTest methodsFor: 'testing' stamp: 'dhs 4/25/2017 00:46:44'!
 test03CanNotAddACustomerWithEmptyName 
 
 	| customerBook |
 			
 	customerBook := CustomerBook new.
 
-	[ customerBook addCustomerNamed: ''.
-	self fail ]
-		on: Error 
-		do: [ :anError | 
-			self assert: anError messageText = CustomerBook customerCanNotBeEmptyErrorMessage.
-			self assert: customerBook isEmpty ]! !
+    self assert: [customerBook addCustomerNamed: ''] 
+    	willRaiseError: Error 
+	withPostconditions: (Array with: [:anError | anError messageText = CustomerBook customerCanNotBeEmptyErrorMessage.] with: [:anError | customerBook isEmpty] )! !
 
-!IdiomTest methodsFor: 'testing' stamp: 'HernanWilkinson 5/16/2012 16:50'!
+!IdiomTest methodsFor: 'testing' stamp: 'dhs 4/25/2017 00:48:19'!
 test04CanNotRemoveAndInvalidCustomer
 	
 	| customerBook johnLennon |
@@ -71,12 +79,10 @@ test04CanNotRemoveAndInvalidCustomer
 	johnLennon := 'John Lennon'.
 	customerBook addCustomerNamed: johnLennon.
 	
-	[ customerBook removeCustomerNamed: 'Paul McCartney'.
-	self fail ]
-		on: NotFound 
-		do: [ :anError | 
-			self assert: customerBook numberOfCustomers = 1.
-			self assert: (customerBook includesCustomerNamed: johnLennon) ]
+    self assert: [customerBook removeCustomerNamed: 'Paul McCartney'] 
+    	willRaiseError: NotFound 
+	withPostconditions: (Array with: [:anError | customerBook numberOfCustomers = 1.] with: [:anError | customerBook includesCustomerNamed: johnLennon] )
+		
 ! !
 
 "-- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- "!
@@ -175,7 +181,7 @@ Object subclass: #StopWatch
 	poolDictionaries: ''
 	category: 'Idiom-Exercise'!
 
-!StopWatch methodsFor: 'as yet unclassified' stamp: 'mario 4/20/2017 21:21:17'!
+!StopWatch methodsFor: 'evaluating' stamp: 'mario 4/20/2017 21:21:17'!
 millisecondsEllapsed: aClosure
 	"comment stating purpose of message"
 
