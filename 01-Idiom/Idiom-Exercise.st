@@ -13,28 +13,37 @@ TestCase subclass: #IdiomTest
 	poolDictionaries: ''
 	category: 'Idiom-Exercise'!
 
-!IdiomTest methodsFor: 'testing' stamp: 'mario 4/20/2017 21:31:47'!
-assertBlock: aBlockClosure runsFasterThanMilliseconds: milliseconds 
-	| stopWatch |
-	  
-	stopWatch := StopWatch new.
-	
-	self assert: (stopWatch millisecondsEllapsed: aBlockClosure ) < milliseconds.
+!IdiomTest methodsFor: 'testing' stamp: 'masch 4/25/2017 07:41:57'!
+assert: aBlockClosure shouldNotTakeMoreThan: aDuration
+	"execute a block and assert that runs before a duration time"
+
+     aBlockClosure durationToRun < aDuration. ! !
+
+!IdiomTest methodsFor: 'testing' stamp: 'masch 4/25/2017 07:42:06'!
+assert: aClosure willRaiseError: error withPostconditions: conditions
+     "assert a block closure expecting an exception with post validations"
+
+	[ aClosure value.
+	self fail ]
+		on: error 
+		do: [ :anError | 
+			conditions do: [ :condition | self assert: (condition value: anError) ]
+		]			
 ! !
 
-!IdiomTest methodsFor: 'testing' stamp: 'mario 4/20/2017 21:33:51'!
+!IdiomTest methodsFor: 'testing' stamp: 'masch 4/25/2017 07:42:14'!
 test01AddingCustomerShouldNotTakeMoreThan50Milliseconds
 
 	| customerBook |
 	
 	customerBook := CustomerBook  new.
 	
-	self assertBlock: [customerBook addCustomerNamed: 'John Lennon'.] runsFasterThanMilliseconds: 50
+	self assert: [customerBook addCustomerNamed: 'John Lennon'.] shouldNotTakeMoreThan: (Duration milliSeconds: 50)
 	
 	
 ! !
 
-!IdiomTest methodsFor: 'testing' stamp: 'mario 4/20/2017 21:32:43'!
+!IdiomTest methodsFor: 'testing' stamp: 'masch 4/25/2017 07:42:19'!
 test02RemovingCustomerShouldNotTakeMoreThan100Milliseconds
 
 	| customerBook paulMcCartney |
@@ -44,25 +53,23 @@ test02RemovingCustomerShouldNotTakeMoreThan100Milliseconds
 	
 	customerBook addCustomerNamed: paulMcCartney.
 	  
-	self assertBlock: [customerBook removeCustomerNamed: paulMcCartney.] runsFasterThanMilliseconds: 100  
+	self assert: [customerBook removeCustomerNamed: paulMcCartney.] shouldNotTakeMoreThan: (Duration milliSeconds: 100)
 	
 ! !
 
-!IdiomTest methodsFor: 'testing' stamp: 'HernanWilkinson 5/9/2012 18:12'!
+!IdiomTest methodsFor: 'testing' stamp: 'masch 4/25/2017 07:42:24'!
 test03CanNotAddACustomerWithEmptyName 
 
-	| customerBook |
+     | customerBook |
 			
-	customerBook := CustomerBook new.
+     customerBook := CustomerBook new.
 
-	[ customerBook addCustomerNamed: ''.
-	self fail ]
-		on: Error 
-		do: [ :anError | 
-			self assert: anError messageText = CustomerBook customerCanNotBeEmptyErrorMessage.
-			self assert: customerBook isEmpty ]! !
+     self assert: [customerBook addCustomerNamed: ''] 
+     willRaiseError: Error 
+     withPostconditions: (Array with: [:anError | anError messageText = CustomerBook customerCanNotBeEmptyErrorMessage.] 
+                                                with: [:anError | customerBook isEmpty] )! !
 
-!IdiomTest methodsFor: 'testing' stamp: 'HernanWilkinson 5/16/2012 16:50'!
+!IdiomTest methodsFor: 'testing' stamp: 'masch 4/25/2017 07:42:33'!
 test04CanNotRemoveAndInvalidCustomer
 	
 	| customerBook johnLennon |
@@ -71,13 +78,10 @@ test04CanNotRemoveAndInvalidCustomer
 	johnLennon := 'John Lennon'.
 	customerBook addCustomerNamed: johnLennon.
 	
-	[ customerBook removeCustomerNamed: 'Paul McCartney'.
-	self fail ]
-		on: NotFound 
-		do: [ :anError | 
-			self assert: customerBook numberOfCustomers = 1.
-			self assert: (customerBook includesCustomerNamed: johnLennon) ]
-! !
+    self assert: [customerBook removeCustomerNamed: 'Paul McCartney'] 
+    	willRaiseError: NotFound 
+	withPostconditions: (Array with: [:anError | customerBook numberOfCustomers = 1.] 
+	                                           with: [:anError | customerBook includesCustomerNamed: johnLennon] )! !
 
 "-- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- "!
 
@@ -166,23 +170,3 @@ customerAlreadyExistsErrorMessage
 customerCanNotBeEmptyErrorMessage
 
 	^'Customer name cannot be empty'! !
-
-
-!classDefinition: #StopWatch category: #'Idiom-Exercise'!
-Object subclass: #StopWatch
-	instanceVariableNames: ''
-	classVariableNames: ''
-	poolDictionaries: ''
-	category: 'Idiom-Exercise'!
-
-!StopWatch methodsFor: 'as yet unclassified' stamp: 'mario 4/20/2017 21:21:17'!
-millisecondsEllapsed: aClosure
-	"comment stating purpose of message"
-
-	| millisecondsBeforeRunning millisecondsAfterRunning |
-
-	millisecondsBeforeRunning := Time millisecondClockValue.
-	aClosure value.
-	millisecondsAfterRunning := Time millisecondClockValue.
-
-	^ millisecondsAfterRunning - millisecondsBeforeRunning.! !
