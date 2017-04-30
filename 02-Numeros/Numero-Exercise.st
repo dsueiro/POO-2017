@@ -99,7 +99,7 @@ test14FraccionMultipliesEnteroCorrectly
 
 	self assert: oneFifth * two equals: twoFifth ! !
 
-!NumeroTest methodsFor: 'tests' stamp: 'masch 4/25/2017 21:37:02'!
+!NumeroTest methodsFor: 'tests' stamp: 'HernanWilkinson 5/7/2016 21:57'!
 test15EnteroDividesFraccionCorrectly
 
 	self assert: one / twoFifth equals: fiveHalfs  ! !
@@ -282,27 +282,40 @@ initalizeWith: aValue
 	value := aValue! !
 
 
-!Entero methodsFor: 'arithmetic operations' stamp: 'masch 4/25/2017 21:13:33'!
+!Entero methodsFor: 'arithmetic operations' stamp: 'masch 4/30/2017 09:14:08'!
 * aMultiplier 
-
-	aMultiplier class = Entero ifTrue: [
-		^self class with: value * aMultiplier integerValue
-	].
 	
-	aMultiplier class = Fraction ifTrue: [
-		^ (self * aMultiplier numerator )  / aMultiplier denominator 
-	].! !
+	(aMultiplier isKindOf: self class) ifTrue: [
+		^ self class with: value * aMultiplier integerValue.
+	].
 
-!Entero methodsFor: 'arithmetic operations' stamp: 'masch 4/25/2017 21:03:50'!
+	(aMultiplier isKindOf: Fraccion) ifTrue: [
+		^ (self value * aMultiplier numerator) / aMultiplier denominator.
+	].
+	! !
+
+!Entero methodsFor: 'arithmetic operations' stamp: 'masch 4/30/2017 09:13:59'!
 + anAdder 
-	anAdder class = Entero ifTrue: [ ^self class with: value + anAdder integerValue].
-	anAdder class = Fraccion ifTrue: [^(self * anAdder denominator + anAdder numerator ) / anAdder denominator ]
+	
+	(anAdder isKindOf: self class) ifTrue: [
+          ^ self class with: value + anAdder integerValue.
+	].
+
+	(anAdder isKindOf: Fraccion) ifTrue: [
+          ^ (anAdder numerator + (self value * anAdder denominator)) / anAdder denominator.
+	].
 ! !
 
-!Entero methodsFor: 'arithmetic operations' stamp: 'masch 4/27/2017 08:36:07'!
+!Entero methodsFor: 'arithmetic operations' stamp: 'masch 4/30/2017 09:15:20'!
 / aDivisor 
+	
+	(aDivisor isKindOf: self class) ifTrue: [
+		^ Fraccion with: self over: aDivisor.
+	].
 
-	^Fraccion with: self over: aDivisor.! !
+	(aDivisor isKindOf: Fraccion) ifTrue: [
+		^ (self value * aDivisor denominator) / aDivisor numerator.
+	].! !
 
 !Entero methodsFor: 'arithmetic operations' stamp: 'HernanWilkinson 5/7/2016 21:55'!
 // aDivisor 
@@ -369,34 +382,43 @@ hash
 	^(numerator hash / denominator hash) hash! !
 
 
-!Fraccion methodsFor: 'arithmetic operations' stamp: 'masch 4/25/2017 21:16:39'!
+!Fraccion methodsFor: 'arithmetic operations' stamp: 'masch 4/30/2017 09:16:19'!
 * aMultiplier 
 	
-	aMultiplier class = Fraccion ifTrue: [	^(numerator * aMultiplier numerator) / (denominator * aMultiplier denominator) ].
-	aMultiplier class = Entero ifTrue:  [ aMultiplier * self].
-	! !
+	(aMultiplier isKindOf: self class) ifTrue: [
+		^ (numerator * aMultiplier numerator) / (denominator * aMultiplier denominator).
+	].
+	
+	(aMultiplier isKindOf: Entero) ifTrue: [
+		^ aMultiplier  * self.
+	].! !
 
-!Fraccion methodsFor: 'arithmetic operations' stamp: 'masch 4/25/2017 21:06:43'!
+!Fraccion methodsFor: 'arithmetic operations' stamp: 'masch 4/30/2017 09:16:34'!
 + anAdder 
 	
-	anAdder class = Fraccion ifTrue: [
+	(anAdder isKindOf: self class) ifTrue: [
 		| newNumerator newDenominator |
-	
+		
 		newNumerator := (numerator * anAdder denominator) + (denominator * anAdder numerator).
 		newDenominator := denominator * anAdder denominator.
 		
-		^newNumerator / newDenominator 
+		^newNumerator / newDenominator
 	].
 
-	anAdder class = Entero ifTrue: [
-		anAdder + self.
-	]
-	! !
+	(anAdder isKindOf: Entero) ifTrue: [
+		^ anAdder + self.
+	].! !
 
-!Fraccion methodsFor: 'arithmetic operations' stamp: 'HernanWilkinson 5/7/2016 23:14'!
+!Fraccion methodsFor: 'arithmetic operations' stamp: 'masch 4/30/2017 09:16:55'!
 / aDivisor 
-	
-	^(numerator * aDivisor denominator) / (denominator * aDivisor numerator)! !
+
+	(aDivisor isKindOf: self class) ifTrue: [	
+		^ (numerator * aDivisor denominator) / (denominator * aDivisor numerator).
+	].
+
+	(aDivisor isKindOf: Entero) ifTrue: [
+		^ (self numerator) / (self denominator * aDivisor value).
+	].! !
 
 
 !Fraccion methodsFor: 'accessing' stamp: 'HernanWilkinson 5/7/2016 21:56'!
