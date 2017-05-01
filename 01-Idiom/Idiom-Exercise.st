@@ -13,20 +13,20 @@ TestCase subclass: #IdiomTest
 	poolDictionaries: ''
 	category: 'Idiom-Exercise'!
 
-!IdiomTest methodsFor: 'testing' stamp: 'masch 5/1/2017 17:59:45'!
+!IdiomTest methodsFor: 'testing' stamp: 'masch 5/1/2017 18:47:16'!
 test01AddingCustomerShouldNotTakeMoreThan50Milliseconds
 
 	| customerBook |
 	
 	customerBook := CustomerBook  new.
 	
-	self class assert: [customerBook addCustomerNamed: 'John Lennon'.] 
+	self assert: [customerBook addCustomerNamed: 'John Lennon'.] 
 						shouldNotTakeMoreThan: (Duration milliSeconds: 50)
 	
 	
 ! !
 
-!IdiomTest methodsFor: 'testing' stamp: 'masch 5/1/2017 17:59:38'!
+!IdiomTest methodsFor: 'testing' stamp: 'masch 5/1/2017 18:47:20'!
 test02RemovingCustomerShouldNotTakeMoreThan100Milliseconds
 
 	| customerBook paulMcCartney |
@@ -36,25 +36,25 @@ test02RemovingCustomerShouldNotTakeMoreThan100Milliseconds
 	
 	customerBook addCustomerNamed: paulMcCartney.
 	  
-	self class assert: [customerBook removeCustomerNamed: paulMcCartney.] 
+	self assert: [customerBook removeCustomerNamed: paulMcCartney.] 
 						shouldNotTakeMoreThan: (Duration milliSeconds: 100)
 	
 ! !
 
-!IdiomTest methodsFor: 'testing' stamp: 'masch 5/1/2017 18:00:32'!
+!IdiomTest methodsFor: 'testing' stamp: 'masch 5/1/2017 18:46:57'!
 test03CanNotAddACustomerWithEmptyName 
 
      | customerBook |
 			
      customerBook := CustomerBook new.
 
-     self class assert: [customerBook addCustomerNamed: ''] 
+     self assert: [customerBook addCustomerNamed: ''] 
      willRaiseError: Error 
      asserting: [ :anError | 
 				self assert: anError messageText = CustomerBook customerCanNotBeEmptyErrorMessage.
 				self assert: customerBook isEmpty.]! !
 
-!IdiomTest methodsFor: 'testing' stamp: 'masch 5/1/2017 18:00:26'!
+!IdiomTest methodsFor: 'testing' stamp: 'masch 5/1/2017 18:47:11'!
 test04CanNotRemoveAndInvalidCustomer
 	
 	| customerBook johnLennon |
@@ -63,25 +63,20 @@ test04CanNotRemoveAndInvalidCustomer
 	johnLennon := 'John Lennon'.
 	customerBook addCustomerNamed: johnLennon.
 	
-	self class assert: [customerBook removeCustomerNamed: 'Paul McCartney'] 
+	self assert: [customerBook removeCustomerNamed: 'Paul McCartney'] 
     	willRaiseError: NotFound 
 	asserting: [ :anError | 
 				self assert: customerBook numberOfCustomers = 1.
 				self assert: (customerBook includesCustomerNamed: johnLennon). ]! !
 
-"-- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- "!
 
-!classDefinition: 'IdiomTest class' category: #'Idiom-Exercise'!
-IdiomTest class
-	instanceVariableNames: 'test01AddingCustomerShouldNotTakeMoreThan50Milliseconds2 test06'!
-
-!IdiomTest class methodsFor: 'assertions' stamp: 'masch 5/1/2017 17:57:39'!
+!IdiomTest methodsFor: 'assertions' stamp: 'masch 5/1/2017 18:45:49'!
 assert: aBlockClosure shouldNotTakeMoreThan: aDuration
 	"execute a block and assert that runs before a duration time"
 
      self assert: aBlockClosure durationToRun < aDuration. ! !
 
-!IdiomTest class methodsFor: 'assertions' stamp: 'masch 5/1/2017 17:58:00'!
+!IdiomTest methodsFor: 'assertions' stamp: 'masch 5/1/2017 18:45:15'!
 assert: aClosure willRaiseError: error asserting: aVerificationBlock
      "assert a block closure expecting an exception with post validations"
 
