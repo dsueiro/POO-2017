@@ -212,6 +212,36 @@ invalidNumberType
 
 	self error: self class invalidNumberTypeErrorDescription! !
 
+!Numero methodsFor: 'arithmetic operations' stamp: 'masch 5/1/2017 20:53:35'!
+productFromEntero: anEntero
+
+	self subclassResponsibility ! !
+
+!Numero methodsFor: 'arithmetic operations' stamp: 'masch 5/1/2017 20:53:21'!
+productFromFraccion: aFraccion
+
+	self subclassResponsibility ! !
+
+!Numero methodsFor: 'arithmetic operations' stamp: 'masch 5/1/2017 20:55:12'!
+quotientFromEntero: anEntero
+
+	self subclassResponsibility ! !
+
+!Numero methodsFor: 'arithmetic operations' stamp: 'masch 5/1/2017 20:54:12'!
+quotientFromFraccion: aFraction
+
+	self subclassResponsibility ! !
+
+!Numero methodsFor: 'arithmetic operations' stamp: 'masch 5/1/2017 20:55:19'!
+sumFromEntero: anEntero
+
+	self subclassResponsibility ! !
+
+!Numero methodsFor: 'arithmetic operations' stamp: 'masch 5/1/2017 20:55:03'!
+sumFromFraccion: aFraction
+
+	self subclassResponsibility ! !
+
 
 !Numero methodsFor: 'testing' stamp: 'HernanWilkinson 5/7/2016 22:49'!
 isOne
@@ -282,40 +312,20 @@ initalizeWith: aValue
 	value := aValue! !
 
 
-!Entero methodsFor: 'arithmetic operations' stamp: 'masch 4/30/2017 09:14:08'!
+!Entero methodsFor: 'arithmetic operations' stamp: 'masch 5/1/2017 20:59:38'!
 * aMultiplier 
-	
-	(aMultiplier isKindOf: self class) ifTrue: [
-		^ self class with: value * aMultiplier integerValue.
-	].
 
-	(aMultiplier isKindOf: Fraccion) ifTrue: [
-		^ (self value * aMultiplier numerator) / aMultiplier denominator.
-	].
-	! !
+	^aMultiplier productFromEntero: self.! !
 
-!Entero methodsFor: 'arithmetic operations' stamp: 'masch 4/30/2017 09:13:59'!
+!Entero methodsFor: 'arithmetic operations' stamp: 'masch 5/1/2017 20:59:49'!
 + anAdder 
 	
-	(anAdder isKindOf: self class) ifTrue: [
-          ^ self class with: value + anAdder integerValue.
-	].
+	^anAdder sumFromEntero: self.! !
 
-	(anAdder isKindOf: Fraccion) ifTrue: [
-          ^ (anAdder numerator + (self value * anAdder denominator)) / anAdder denominator.
-	].
-! !
-
-!Entero methodsFor: 'arithmetic operations' stamp: 'masch 4/30/2017 09:15:20'!
+!Entero methodsFor: 'arithmetic operations' stamp: 'masch 5/1/2017 21:00:00'!
 / aDivisor 
 	
-	(aDivisor isKindOf: self class) ifTrue: [
-		^ Fraccion with: self over: aDivisor.
-	].
-
-	(aDivisor isKindOf: Fraccion) ifTrue: [
-		^ (self value * aDivisor denominator) / aDivisor numerator.
-	].! !
+	^aDivisor quotientFromEntero: self.! !
 
 !Entero methodsFor: 'arithmetic operations' stamp: 'HernanWilkinson 5/7/2016 21:55'!
 // aDivisor 
@@ -326,6 +336,37 @@ initalizeWith: aValue
 greatestCommonDivisorWith: anEntero 
 	
 	^self class with: (value gcd: anEntero integerValue)! !
+
+!Entero methodsFor: 'arithmetic operations' stamp: 'masch 5/1/2017 20:59:01'!
+productFromEntero: anEntero
+	
+     ^self class with: value * anEntero integerValue.! !
+
+!Entero methodsFor: 'arithmetic operations' stamp: 'masch 5/1/2017 20:59:24'!
+productFromFraccion: aFraccion
+	
+  	^(self value * aFraccion numerator) / aFraccion denominator.! !
+
+!Entero methodsFor: 'arithmetic operations' stamp: 'masch 5/1/2017 20:56:19'!
+quotientFromEntero: anEntero
+	
+	^Fraccion with: anEntero over: self.! !
+
+!Entero methodsFor: 'arithmetic operations' stamp: 'masch 5/1/2017 20:56:25'!
+quotientFromFraccion: aFraccion
+	
+	^(aFraccion numerator) / (self value * aFraccion denominator).! !
+
+!Entero methodsFor: 'arithmetic operations' stamp: 'masch 5/1/2017 20:55:54'!
+sumFromEntero: anEntero
+	
+     ^self class with: value + anEntero integerValue.! !
+
+!Entero methodsFor: 'arithmetic operations' stamp: 'masch 5/1/2017 21:03:41'!
+sumFromFraccion: aFraccion
+	
+	^aFraccion sumFromEntero: self.
+! !
 
 "-- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- "!
 
@@ -382,43 +423,55 @@ hash
 	^(numerator hash / denominator hash) hash! !
 
 
-!Fraccion methodsFor: 'arithmetic operations' stamp: 'masch 4/30/2017 09:16:19'!
+!Fraccion methodsFor: 'arithmetic operations' stamp: 'masch 5/1/2017 21:02:17'!
 * aMultiplier 
 	
-	(aMultiplier isKindOf: self class) ifTrue: [
-		^ (numerator * aMultiplier numerator) / (denominator * aMultiplier denominator).
-	].
-	
-	(aMultiplier isKindOf: Entero) ifTrue: [
-		^ aMultiplier  * self.
-	].! !
+	^aMultiplier productFromFraccion: self.! !
 
-!Fraccion methodsFor: 'arithmetic operations' stamp: 'masch 4/30/2017 09:16:34'!
+!Fraccion methodsFor: 'arithmetic operations' stamp: 'masch 5/1/2017 21:01:02'!
 + anAdder 
 	
-	(anAdder isKindOf: self class) ifTrue: [
-		| newNumerator newDenominator |
-		
-		newNumerator := (numerator * anAdder denominator) + (denominator * anAdder numerator).
-		newDenominator := denominator * anAdder denominator.
-		
-		^newNumerator / newDenominator
-	].
+	^anAdder sumFromFraccion: self.! !
 
-	(anAdder isKindOf: Entero) ifTrue: [
-		^ anAdder + self.
-	].! !
-
-!Fraccion methodsFor: 'arithmetic operations' stamp: 'masch 4/30/2017 09:16:55'!
+!Fraccion methodsFor: 'arithmetic operations' stamp: 'masch 5/1/2017 21:01:42'!
 / aDivisor 
 
-	(aDivisor isKindOf: self class) ifTrue: [	
-		^ (numerator * aDivisor denominator) / (denominator * aDivisor numerator).
-	].
+	^aDivisor quotientFromFraccion: self.! !
 
-	(aDivisor isKindOf: Entero) ifTrue: [
-		^ (self numerator) / (self denominator * aDivisor value).
-	].! !
+!Fraccion methodsFor: 'arithmetic operations' stamp: 'masch 5/1/2017 21:01:57'!
+productFromEntero: anEntero
+
+	^self * anEntero.! !
+
+!Fraccion methodsFor: 'arithmetic operations' stamp: 'masch 5/1/2017 21:02:06'!
+productFromFraccion: aFraccion
+
+	^(self numerator * aFraccion numerator) / (self denominator * aFraccion denominator).! !
+
+!Fraccion methodsFor: 'arithmetic operations' stamp: 'masch 5/1/2017 21:01:33'!
+quotientFromEntero: anEntero
+
+	^Fraccion with: (anEntero * self denominator) over: self numerator ! !
+
+!Fraccion methodsFor: 'arithmetic operations' stamp: 'masch 5/1/2017 21:01:24'!
+quotientFromFraccion: aFraccion
+
+	^(self denominator * aFraccion numerator) / (self numerator * aFraccion denominator).! !
+
+!Fraccion methodsFor: 'arithmetic operations' stamp: 'masch 5/1/2017 21:00:31'!
+sumFromEntero: anEntero
+
+	^(self numerator + (anEntero * self denominator)) / self denominator.! !
+
+!Fraccion methodsFor: 'arithmetic operations' stamp: 'masch 5/1/2017 21:09:17'!
+sumFromFraccion: aFraccion
+
+	| newNumerator newDenominator |
+
+	newNumerator := (self numerator * aFraccion denominator) + (self denominator * aFraccion numerator).
+	newDenominator := self denominator * aFraccion denominator.
+
+	^Fraccion with: newNumerator over: newDenominator! !
 
 
 !Fraccion methodsFor: 'accessing' stamp: 'HernanWilkinson 5/7/2016 21:56'!
