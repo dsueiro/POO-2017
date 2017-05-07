@@ -91,7 +91,7 @@ test07TopDoesNotRemoveObjectFromStack
 	self assert: stack size = 1.
 	! !
 
-!OOStackTest methodsFor: 'test' stamp: 'HAW 4/14/2017 22:48:26'!
+!OOStackTest methodsFor: 'test' stamp: 'masch 5/7/2017 17:15:41'!
 test08CanNotPopWhenThereAreNoObjectsInTheStack
 
 	| stack  |
@@ -99,13 +99,13 @@ test08CanNotPopWhenThereAreNoObjectsInTheStack
 	stack := OOStack new.
 	self
 		should: [ stack pop ]
-		raise: Error - MessageNotUnderstood 
+		raise: Error - MessageNotUnderstood
 		withExceptionDo: [ :anError |
 			self assert: anError messageText = OOStack stackEmptyErrorDescription ]
 		
 ! !
 
-!OOStackTest methodsFor: 'test' stamp: 'HAW 4/14/2017 22:48:36'!
+!OOStackTest methodsFor: 'test' stamp: 'masch 5/7/2017 17:24:49'!
 test09CanNotPopWhenThereAreNoObjectsInTheStackAndTheStackHadObjects
 
 	| stack  |
@@ -116,13 +116,13 @@ test09CanNotPopWhenThereAreNoObjectsInTheStackAndTheStackHadObjects
 	
 	self
 		should: [ stack pop ]
-		raise: Error - MessageNotUnderstood 
+		raise: Error - MessageNotUnderstood
 		withExceptionDo: [ :anError |
 			self assert: anError messageText = OOStack stackEmptyErrorDescription ]
 		
 ! !
 
-!OOStackTest methodsFor: 'test' stamp: 'HAW 4/14/2017 22:48:44'!
+!OOStackTest methodsFor: 'test' stamp: 'masch 5/7/2017 17:25:01'!
 test10CanNotTopWhenThereAreNoObjectsInTheStack
 
 	| stack  |
@@ -130,7 +130,7 @@ test10CanNotTopWhenThereAreNoObjectsInTheStack
 	stack := OOStack new.
 	self
 		should: [ stack top ]
-		raise: Error - MessageNotUnderstood 
+		raise: Error - MessageNotUnderstood
 		withExceptionDo: [ :anError |
 			self assert: anError messageText = OOStack stackEmptyErrorDescription ]
 		
@@ -139,10 +139,42 @@ test10CanNotTopWhenThereAreNoObjectsInTheStack
 
 !classDefinition: #OOStack category: #'Stack-Exercise'!
 Object subclass: #OOStack
-	instanceVariableNames: ''
+	instanceVariableNames: 'itemsCollection'
 	classVariableNames: ''
 	poolDictionaries: ''
 	category: 'Stack-Exercise'!
+
+!OOStack methodsFor: 'modifying' stamp: 'masch 5/7/2017 20:33:30'!
+pop
+
+	^ itemsCollection removeLast itemValue.! !
+
+!OOStack methodsFor: 'modifying' stamp: 'masch 5/7/2017 20:33:34'!
+push: aValue
+		
+	itemsCollection add: (OOValueStackItem createWithValue: aValue).! !
+
+
+!OOStack methodsFor: 'acceding' stamp: 'masch 5/7/2017 20:33:06'!
+isEmpty
+	
+	^ (itemsCollection last) hasValue == false.! !
+
+!OOStack methodsFor: 'acceding' stamp: 'masch 5/7/2017 20:33:11'!
+size
+
+	^ itemsCollection size - 1.! !
+
+!OOStack methodsFor: 'acceding' stamp: 'masch 5/7/2017 20:33:19'!
+top
+	
+	^ (itemsCollection last) itemValue.! !
+
+
+!OOStack methodsFor: 'initialization' stamp: 'masch 5/7/2017 20:32:57'!
+initialize
+
+	itemsCollection := OrderedCollection with: OOEmptyStackItem new.! !
 
 "-- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- "!
 
@@ -154,3 +186,79 @@ OOStack class
 stackEmptyErrorDescription
 	
 	^ 'Stack is empty'! !
+
+
+!classDefinition: #OOStackItem category: #'Stack-Exercise'!
+Object subclass: #OOStackItem
+	instanceVariableNames: ''
+	classVariableNames: ''
+	poolDictionaries: ''
+	category: 'Stack-Exercise'!
+
+!OOStackItem methodsFor: 'acceding' stamp: 'masch 5/7/2017 20:24:48'!
+hasValue
+
+	^ self subclassResponsibility.! !
+
+!OOStackItem methodsFor: 'acceding' stamp: 'masch 5/7/2017 20:24:38'!
+itemValue
+
+	^ self subclassResponsibility.! !
+
+
+!classDefinition: #OOEmptyStackItem category: #'Stack-Exercise'!
+OOStackItem subclass: #OOEmptyStackItem
+	instanceVariableNames: ''
+	classVariableNames: ''
+	poolDictionaries: ''
+	category: 'Stack-Exercise'!
+
+!OOEmptyStackItem methodsFor: 'acceding' stamp: 'masch 5/7/2017 20:25:06'!
+hasValue
+
+	^ false.! !
+
+!OOEmptyStackItem methodsFor: 'acceding' stamp: 'masch 5/7/2017 20:21:33'!
+itemValue
+
+	self error: OOStack stackEmptyErrorDescription.! !
+
+
+!classDefinition: #OOValueStackItem category: #'Stack-Exercise'!
+OOStackItem subclass: #OOValueStackItem
+	instanceVariableNames: 'value'
+	classVariableNames: ''
+	poolDictionaries: ''
+	category: 'Stack-Exercise'!
+
+!OOValueStackItem methodsFor: 'initializing' stamp: 'masch 5/7/2017 20:27:36'!
+initialiceWithValue: aValue
+	
+	^ value := aValue.! !
+
+
+!OOValueStackItem methodsFor: 'acceding' stamp: 'masch 5/7/2017 20:27:26'!
+hasValue
+
+	^ true.! !
+
+!OOValueStackItem methodsFor: 'acceding' stamp: 'masch 5/7/2017 20:27:31'!
+itemValue
+
+	^ value.! !
+
+"-- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- "!
+
+!classDefinition: 'OOValueStackItem class' category: #'Stack-Exercise'!
+OOValueStackItem class
+	instanceVariableNames: ''!
+
+!OOValueStackItem class methodsFor: 'instance creation' stamp: 'masch 5/7/2017 20:29:09'!
+createWithValue: aValue
+
+	| newItem |
+	
+	newItem := self new.
+	newItem initialiceWithValue: aValue .
+	
+	^ newItem.! !
