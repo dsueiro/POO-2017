@@ -142,10 +142,6 @@ Object subclass: #OOStack
 	poolDictionaries: ''
 	category: 'Stack-Exercise'!
 
-!OOStack methodsFor: 'as yet unclassified' stamp: 'pp 5/7/2017 22:48:12'!
-initialize
-	top := OOStackEmptyNode new! !
-
 !OOStack methodsFor: 'as yet unclassified' stamp: 'pp 5/7/2017 22:51:47'!
 isEmpty
 	^top isEmpty! !
@@ -158,19 +154,25 @@ pop
 	^anObject
 		! !
 
-!OOStack methodsFor: 'as yet unclassified' stamp: 'pp 5/7/2017 23:36:54'!
+!OOStack methodsFor: 'as yet unclassified' stamp: 'pp 5/8/2017 00:03:06'!
 push: anObject
 	
-	top := (OOStackNotEmptyNode new value: anObject; next: top)
+	top := OOStackNotEmptyNode new value: anObject; next: top
 		! !
-
-!OOStack methodsFor: 'as yet unclassified' stamp: 'pp 5/7/2017 23:41:05'!
-size
-	^top size	! !
 
 !OOStack methodsFor: 'as yet unclassified' stamp: 'pp 5/7/2017 23:40:05'!
 top
 	^top value	! !
+
+
+!OOStack methodsFor: 'initialization' stamp: 'pp 5/7/2017 22:48:12'!
+initialize
+	top := OOStackEmptyNode new! !
+
+
+!OOStack methodsFor: 'accessing' stamp: 'pp 5/7/2017 23:41:05'!
+size
+	^top size	! !
 
 "-- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- "!
 
@@ -191,20 +193,23 @@ Object subclass: #OOStackNode
 	poolDictionaries: ''
 	category: 'Stack-Exercise'!
 
-!OOStackNode methodsFor: 'as yet unclassified' stamp: 'pp 5/7/2017 22:44:58'!
-isEmpty
-	self subClassResponsability! !
-
 !OOStackNode methodsFor: 'as yet unclassified' stamp: 'pp 5/7/2017 23:36:01'!
 next
 	self subClassResponsability! !
 
-!OOStackNode methodsFor: 'as yet unclassified' stamp: 'pp 5/7/2017 23:41:14'!
+
+!OOStackNode methodsFor: 'accessing' stamp: 'pp 5/7/2017 23:41:14'!
 size
 	self subClassResponsability! !
 
-!OOStackNode methodsFor: 'as yet unclassified' stamp: 'pp 5/7/2017 23:36:03'!
+
+!OOStackNode methodsFor: 'evaluating' stamp: 'pp 5/7/2017 23:36:03'!
 value
+	self subClassResponsability! !
+
+
+!OOStackNode methodsFor: 'testing' stamp: 'pp 5/7/2017 22:44:58'!
+isEmpty
 	self subClassResponsability! !
 
 
@@ -215,21 +220,24 @@ OOStackNode subclass: #OOStackEmptyNode
 	poolDictionaries: ''
 	category: 'Stack-Exercise'!
 
-!OOStackEmptyNode methodsFor: 'as yet unclassified' stamp: 'pp 5/7/2017 22:50:55'!
-isEmpty
-	^true! !
-
 !OOStackEmptyNode methodsFor: 'as yet unclassified' stamp: 'pp 5/7/2017 23:34:57'!
 next
 	self error: OOStack stackEmptyErrorDescription! !
 
-!OOStackEmptyNode methodsFor: 'as yet unclassified' stamp: 'pp 5/7/2017 23:41:35'!
+
+!OOStackEmptyNode methodsFor: 'accessing' stamp: 'pp 5/7/2017 23:41:35'!
 size
 	^0! !
 
-!OOStackEmptyNode methodsFor: 'as yet unclassified' stamp: 'pp 5/7/2017 23:35:21'!
+
+!OOStackEmptyNode methodsFor: 'evaluating' stamp: 'pp 5/7/2017 23:35:21'!
 value
 	self error: OOStack stackEmptyErrorDescription! !
+
+
+!OOStackEmptyNode methodsFor: 'testing' stamp: 'pp 5/7/2017 22:50:55'!
+isEmpty
+	^true! !
 
 
 !classDefinition: #OOStackNotEmptyNode category: #'Stack-Exercise'!
@@ -239,10 +247,6 @@ OOStackNode subclass: #OOStackNotEmptyNode
 	poolDictionaries: ''
 	category: 'Stack-Exercise'!
 
-!OOStackNotEmptyNode methodsFor: 'as yet unclassified' stamp: 'pp 5/7/2017 23:01:15'!
-isEmpty
-	^false! !
-
 !OOStackNotEmptyNode methodsFor: 'as yet unclassified' stamp: 'pp 5/7/2017 23:12:33'!
 next
 	^next! !
@@ -251,14 +255,21 @@ next
 next: anOOStackNode
 	next := anOOStackNode! !
 
-!OOStackNotEmptyNode methodsFor: 'as yet unclassified' stamp: 'pp 5/7/2017 23:41:51'!
-size
-	^1+next size! !
-
-!OOStackNotEmptyNode methodsFor: 'as yet unclassified' stamp: 'pp 5/7/2017 23:12:46'!
-value
-	^value! !
-
 !OOStackNotEmptyNode methodsFor: 'as yet unclassified' stamp: 'pp 5/7/2017 23:12:05'!
 value: anObject
 	value := anObject! !
+
+
+!OOStackNotEmptyNode methodsFor: 'testing' stamp: 'pp 5/7/2017 23:01:15'!
+isEmpty
+	^false! !
+
+
+!OOStackNotEmptyNode methodsFor: 'accessing' stamp: 'pp 5/7/2017 23:41:51'!
+size
+	^1+next size! !
+
+
+!OOStackNotEmptyNode methodsFor: 'evaluating' stamp: 'pp 5/7/2017 23:12:46'!
+value
+	^value! !
