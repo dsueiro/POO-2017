@@ -55,11 +55,34 @@ test05DeadCellWithThreeAliveNeighResurects
 	
 	self deny: (gameOfLife isDeadAt: 1@1) ! !
 
-!GOLTest methodsFor: 'as yet unclassified' stamp: 'HAW 5/11/2017 20:59:58'!
-test06CreateCellOutsideBounds
-
+!GOLTest methodsFor: 'as yet unclassified' stamp: 'DHS 5/12/2017 23:49:53'!
+test06CannotAddAliveCellWithRowGreaterThanMaxRow
 	self 
 		should: [ GameOfLife withLiveCells: { 2@0. 1@0. 1@4 } withSize: 3@3 ]
+		raise: Error - MessageNotUnderstood 
+		withExceptionDo: [ :anError |
+			self assert: anError messageText equals: 'celda fuera de rango' ]! !
+
+!GOLTest methodsFor: 'as yet unclassified' stamp: 'DHS 5/12/2017 23:51:19'!
+test07CannotAddAliveCellWithColumnGreaterThanMaxColumn
+	self 
+		should: [ GameOfLife withLiveCells: { 2@0. 1@0. 4@1 } withSize: 3@3 ]
+		raise: Error - MessageNotUnderstood 
+		withExceptionDo: [ :anError |
+			self assert: anError messageText equals: 'celda fuera de rango' ]! !
+
+!GOLTest methodsFor: 'as yet unclassified' stamp: 'DHS 5/12/2017 23:52:54'!
+test08CannotAddAliveCellWithNegativeRow
+	self 
+		should: [ GameOfLife withLiveCells: { 2@0. 1@0. 1@(-1) } withSize: 3@3 ]
+		raise: Error - MessageNotUnderstood 
+		withExceptionDo: [ :anError |
+			self assert: anError messageText equals: 'celda fuera de rango' ]! !
+
+!GOLTest methodsFor: 'as yet unclassified' stamp: 'DHS 5/12/2017 23:53:46'!
+test09CannotAddAliveCellWithNegativeColumn
+	self 
+		should: [ GameOfLife withLiveCells: { 2@0. 1@0. (-1)@1 } withSize: 3@3 ]
 		raise: Error - MessageNotUnderstood 
 		withExceptionDo: [ :anError |
 			self assert: anError messageText equals: 'celda fuera de rango' ]! !
@@ -72,23 +95,46 @@ Object subclass: #GameOfLife
 	poolDictionaries: ''
 	category: 'GOL'!
 
-!GameOfLife methodsFor: 'as yet unclassified' stamp: 'HAW 5/12/2017 09:10:31'!
+!GameOfLife methodsFor: 'as yet unclassified' stamp: 'DHS 5/12/2017 23:58:23'!
+initializeWith: aCollectionOfAliveCells withSize: aSize
+
+	size := aSize.
+	aliveCells := aCollectionOfAliveCells.
+	! !
+
+!GameOfLife methodsFor: 'as yet unclassified' stamp: 'DHS 5/13/2017 00:16:51'!
+nextGeneration
+	
+	aliveCells := self gameCells select: [:aCell | (self isAliveAt: aCell) 
+			ifTrue: [self hasToSurvive: aCell ]
+			ifFalse: [self hasToResurrect: aCell]
+	]
+! !
+
+
+!GameOfLife methodsFor: 'private' stamp: 'DHS 5/13/2017 00:12:06'!
 deadCells
 	
-	| deadCells |
+	^self gameCells select: [:cell| self isDeadAt: cell]
+! !
+
+!GameOfLife methodsFor: 'private' stamp: 'DHS 5/13/2017 00:10:11'!
+gameCells
 	
-	deadCells _ OrderedCollection new.
+	| gameCells |
+	
+	gameCells _ Set new.
 	0 to: size x do: [ :x |
 		0 to: size y do: [ :y |
-			(aliveCells includes: x@y) not ifTrue: [ deadCells add: x@y]]].
-	^deadCells ! !
+			gameCells add: x@y]].
+	^gameCells ! !
 
-!GameOfLife methodsFor: 'as yet unclassified' stamp: 'HAW 5/11/2017 21:11:17'!
+!GameOfLife methodsFor: 'private' stamp: 'HAW 5/11/2017 21:11:17'!
 hasToResurrect: aCell
 
 	^(self numberOfAliveNeighboursOf: aCell) = 3! !
 
-!GameOfLife methodsFor: 'as yet unclassified' stamp: 'HAW 5/11/2017 19:57:05'!
+!GameOfLife methodsFor: 'private' stamp: 'HAW 5/11/2017 19:57:05'!
 hasToSurvive: aCell
 	
 	| numberOfAliveNeighbours|
@@ -97,31 +143,17 @@ hasToSurvive: aCell
 	
 	^numberOfAliveNeighbours = 2 or:  [numberOfAliveNeighbours = 3]! !
 
-!GameOfLife methodsFor: 'as yet unclassified' stamp: 'HAW 5/9/2017 20:53:16'!
-initializeWith: aCollectionOfAliveCells 
+!GameOfLife methodsFor: 'private' stamp: 'DHS 5/13/2017 00:06:24'!
+isAliveAt: aCell
 
-	aliveCells := aCollectionOfAliveCells ! !
+	^aliveCells includes: aCell! !
 
-!GameOfLife methodsFor: 'as yet unclassified' stamp: 'HAW 5/11/2017 20:40:27'!
-initializeWith: aCollectionOfAliveCells withSize: aSize
-
-	size := aSize.
-	aliveCells := aCollectionOfAliveCells.
-	(aliveCells allSatisfy: [:aCell |
-		(aCell x between: 0 and: size x) and: [ aCell y between: 0 and: size y]]) ifFalse: [ self error: 'celda fuera de rango' ]! !
-
-!GameOfLife methodsFor: 'as yet unclassified' stamp: 'HAW 5/10/2017 10:28:24'!
+!GameOfLife methodsFor: 'private' stamp: 'DHS 5/13/2017 00:06:52'!
 isDeadAt: aCell
 
-	^(aliveCells includes: aCell) not! !
+	^(self isAliveAt: aCell) not! !
 
-!GameOfLife methodsFor: 'as yet unclassified' stamp: 'HAW 5/11/2017 21:05:39'!
-nextGeneration
-	
-	aliveCells := (aliveCells select: [ :aCell | self hasToSurvive: aCell ]) union:
-		(self deadCells select: [ :aDeadCell | self hasToResurrect: aDeadCell ])! !
-
-!GameOfLife methodsFor: 'as yet unclassified' stamp: 'HAW 5/10/2017 10:29:35'!
+!GameOfLife methodsFor: 'private' stamp: 'HAW 5/10/2017 10:29:35'!
 numberOfAliveNeighboursOf: aCell
 
 	^(aCell eightNeighbors intersection: aliveCells) size! !
@@ -132,12 +164,10 @@ numberOfAliveNeighboursOf: aCell
 GameOfLife class
 	instanceVariableNames: ''!
 
-!GameOfLife class methodsFor: 'as yet unclassified' stamp: 'HAW 5/9/2017 20:52:29'!
-withLiveCells: aCollectionOfAliveCells
+!GameOfLife class methodsFor: 'as yet unclassified' stamp: 'DHS 5/12/2017 23:58:09'!
+withLiveCells: aCollectionOfAliveCells withSize: upperTopPoint 
 
-	^self new initializeWith: aCollectionOfAliveCells ! !
-
-!GameOfLife class methodsFor: 'as yet unclassified' stamp: 'HAW 5/11/2017 20:38:14'!
-withLiveCells: aCollectionOfAliveCells withSize: aPoint 
+	(aCollectionOfAliveCells allSatisfy: [:aCell |
+		(aCell x between: 0 and: upperTopPoint x) and: [ aCell y between: 0 and: upperTopPoint y]]) ifFalse: [ self error: 'celda fuera de rango' ].
 	
-	^self new initializeWith: aCollectionOfAliveCells withSize: aPoint ! !
+	^self new initializeWith: aCollectionOfAliveCells withSize: upperTopPoint ! !
