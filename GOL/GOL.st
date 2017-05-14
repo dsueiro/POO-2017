@@ -5,6 +5,14 @@ TestCase subclass: #GOLTest
 	poolDictionaries: ''
 	category: 'GOL'!
 
+!GOLTest methodsFor: 'as yet unclassified' stamp: 'DHS 5/14/2017 13:10:59'!
+atest10CannotAddAliveCellWithNonIntegerColumn
+	self 
+		should: [ GameOfLife withLiveCells: { 1.1@0 } withSize: 3@3 ]
+		raise: Error - MessageNotUnderstood 
+		withExceptionDo: [ :anError |
+			self assert: anError messageText equals: 'celda fuera de rango' ]! !
+
 !GOLTest methodsFor: 'as yet unclassified' stamp: 'HAW 5/11/2017 21:14:07'!
 test01AliveCellWithLessThanTwoAliveNeighDies
 
@@ -87,6 +95,74 @@ test09CannotAddAliveCellWithNegativeColumn
 		withExceptionDo: [ :anError |
 			self assert: anError messageText equals: 'celda fuera de rango' ]! !
 
+!GOLTest methodsFor: 'as yet unclassified' stamp: 'DHS 5/14/2017 13:19:08'!
+test10CannotAddAliveCellWithNonIntegerColumn
+	self 
+		should: [ GameOfLife withLiveCells: { 1.1@0 } withSize: 3@3 ]
+		raise: Error - MessageNotUnderstood 
+		withExceptionDo: [ :anError |
+			self assert: anError messageText equals: 'celda fuera de rango' ]! !
+
+!GOLTest methodsFor: 'as yet unclassified' stamp: 'DHS 5/14/2017 13:22:50'!
+test11CannotAddAliveCellWithNonIntegerRow
+	self 
+		should: [ GameOfLife withLiveCells: { 1@1.1 } withSize: 3@3 ]
+		raise: Error - MessageNotUnderstood 
+		withExceptionDo: [ :anError |
+			self assert: anError messageText equals: 'celda fuera de rango' ]! !
+
+
+!classDefinition: #CellState category: #GOL!
+Object subclass: #CellState
+	instanceVariableNames: 'gameOfLife cell'
+	classVariableNames: ''
+	poolDictionaries: ''
+	category: 'GOL'!
+
+!CellState methodsFor: 'as yet unclassified' stamp: 'DHS 5/14/2017 12:39:24'!
+aliveInNextGeneration
+	self subclassResponsibility.! !
+
+!CellState methodsFor: 'as yet unclassified' stamp: 'DHS 5/14/2017 12:50:30'!
+initializeWithGame: aGameOfLife andCell: aCell
+	gameOfLife := aGameOfLife.
+	cell := aCell.! !
+
+"-- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- "!
+
+!classDefinition: 'CellState class' category: #GOL!
+CellState class
+	instanceVariableNames: ''!
+
+!CellState class methodsFor: 'as yet unclassified' stamp: 'DHS 5/14/2017 13:00:25'!
+withGame: aGameOfLife andCell: aCell
+	
+	self new initializeWithGame: aGameOfLife andCell: aCell! !
+
+
+!classDefinition: #AliveCell category: #GOL!
+CellState subclass: #AliveCell
+	instanceVariableNames: ''
+	classVariableNames: ''
+	poolDictionaries: ''
+	category: 'GOL'!
+
+!AliveCell methodsFor: 'as yet unclassified' stamp: 'DHS 5/14/2017 12:46:41'!
+aliveInNextGeneration
+	gameOfLife aliveInNextGenerationAliveCell: cell! !
+
+
+!classDefinition: #DeadCell category: #GOL!
+CellState subclass: #DeadCell
+	instanceVariableNames: ''
+	classVariableNames: ''
+	poolDictionaries: ''
+	category: 'GOL'!
+
+!DeadCell methodsFor: 'as yet unclassified' stamp: 'DHS 5/14/2017 12:49:03'!
+aliveInNextGeneration
+	gameOfLife aliveInNextGenerationDeadCell: cell! !
+
 
 !classDefinition: #GameOfLife category: #GOL!
 Object subclass: #GameOfLife
@@ -102,15 +178,22 @@ initializeWith: aCollectionOfAliveCells withSize: aSize
 	aliveCells := aCollectionOfAliveCells.
 	! !
 
-!GameOfLife methodsFor: 'as yet unclassified' stamp: 'DHS 5/13/2017 00:16:51'!
+!GameOfLife methodsFor: 'as yet unclassified' stamp: 'DHS 5/14/2017 12:55:40'!
 nextGeneration
 	
 	aliveCells := self gameCells select: [:aCell | (self isAliveAt: aCell) 
-			ifTrue: [self hasToSurvive: aCell ]
-			ifFalse: [self hasToResurrect: aCell]
+			ifTrue: [self isAliveInNextGenerationAliveCell: aCell ]
+			ifFalse: [self isAliveInNextGenerationDeadCell: aCell]
 	]
 ! !
 
+
+!GameOfLife methodsFor: 'private' stamp: 'DHS 5/14/2017 13:02:12'!
+cellState: aCell
+	^(self isAliveAt: aCell)
+			ifTrue: [AliveCell withGame: self andCell: aCell]
+			ifFalse: [DeadCell withGame: self andCell: aCell]
+! !
 
 !GameOfLife methodsFor: 'private' stamp: 'DHS 5/13/2017 00:12:06'!
 deadCells
@@ -148,6 +231,14 @@ isAliveAt: aCell
 
 	^aliveCells includes: aCell! !
 
+!GameOfLife methodsFor: 'private' stamp: 'DHS 5/14/2017 12:52:44'!
+isAliveInNextGenerationAliveCell: aCell 
+	^self hasToSurvive: aCell! !
+
+!GameOfLife methodsFor: 'private' stamp: 'DHS 5/14/2017 12:54:56'!
+isAliveInNextGenerationDeadCell: aCell
+	^self hasToSurvive: aCell! !
+
 !GameOfLife methodsFor: 'private' stamp: 'DHS 5/13/2017 00:06:52'!
 isDeadAt: aCell
 
@@ -164,10 +255,23 @@ numberOfAliveNeighboursOf: aCell
 GameOfLife class
 	instanceVariableNames: ''!
 
-!GameOfLife class methodsFor: 'as yet unclassified' stamp: 'DHS 5/12/2017 23:58:09'!
+!GameOfLife class methodsFor: 'as yet unclassified' stamp: 'DHS 5/14/2017 13:27:25'!
+validColumn: aCell withSize: upperTopPoint
+	^self validCoord: aCell x withMaxValue: upperTopPoint x.
+! !
+
+!GameOfLife class methodsFor: 'as yet unclassified' stamp: 'DHS 5/14/2017 13:24:44'!
+validCoord: aCoordinate withMaxValue: maxValue
+	^(aCoordinate isKindOf: Integer) and: [aCoordinate between: 0 and: maxValue]! !
+
+!GameOfLife class methodsFor: 'as yet unclassified' stamp: 'DHS 5/14/2017 13:27:49'!
+validRow: aCell withSize: upperTopPoint
+	^self validCoord: aCell y withMaxValue: upperTopPoint y.! !
+
+!GameOfLife class methodsFor: 'as yet unclassified' stamp: 'DHS 5/14/2017 13:18:48'!
 withLiveCells: aCollectionOfAliveCells withSize: upperTopPoint 
 
 	(aCollectionOfAliveCells allSatisfy: [:aCell |
-		(aCell x between: 0 and: upperTopPoint x) and: [ aCell y between: 0 and: upperTopPoint y]]) ifFalse: [ self error: 'celda fuera de rango' ].
+		(self validColumn: aCell withSize: upperTopPoint ) and: [self validRow: aCell withSize: upperTopPoint]]) ifFalse: [ self error: 'celda fuera de rango' ].
 	
 	^self new initializeWith: aCollectionOfAliveCells withSize: upperTopPoint ! !
