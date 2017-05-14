@@ -5,7 +5,7 @@ TestCase subclass: #GOLTest
 	poolDictionaries: ''
 	category: 'GOL'!
 
-!GOLTest methodsFor: 'as yet unclassified' stamp: 'DHS 5/14/2017 13:10:59'!
+!GOLTest methodsFor: 'testing' stamp: 'DHS 5/14/2017 13:10:59'!
 atest10CannotAddAliveCellWithNonIntegerColumn
 	self 
 		should: [ GameOfLife withLiveCells: { 1.1@0 } withSize: 3@3 ]
@@ -13,7 +13,7 @@ atest10CannotAddAliveCellWithNonIntegerColumn
 		withExceptionDo: [ :anError |
 			self assert: anError messageText equals: 'celda fuera de rango' ]! !
 
-!GOLTest methodsFor: 'as yet unclassified' stamp: 'HAW 5/11/2017 21:14:07'!
+!GOLTest methodsFor: 'testing' stamp: 'HAW 5/11/2017 21:14:07'!
 test01AliveCellWithLessThanTwoAliveNeighDies
 
 	|gameOfLife |
@@ -23,7 +23,7 @@ test01AliveCellWithLessThanTwoAliveNeighDies
 	
 	self assert: (gameOfLife isDeadAt: 1@1) ! !
 
-!GOLTest methodsFor: 'as yet unclassified' stamp: 'HAW 5/11/2017 21:14:14'!
+!GOLTest methodsFor: 'testing' stamp: 'HAW 5/11/2017 21:14:14'!
 test02AliveCellWithTwoAliveNeighStaysAlive
 
 	|gameOfLife |
@@ -33,7 +33,7 @@ test02AliveCellWithTwoAliveNeighStaysAlive
 	
 	self deny: (gameOfLife isDeadAt: 1@1) ! !
 
-!GOLTest methodsFor: 'as yet unclassified' stamp: 'HAW 5/11/2017 21:14:19'!
+!GOLTest methodsFor: 'testing' stamp: 'HAW 5/11/2017 21:14:19'!
 test03AliveCellWithThreeAliveNeighStaysAlive
 
 	|gameOfLife |
@@ -43,7 +43,7 @@ test03AliveCellWithThreeAliveNeighStaysAlive
 	
 	self deny: (gameOfLife isDeadAt: 1@1) ! !
 
-!GOLTest methodsFor: 'as yet unclassified' stamp: 'HAW 5/11/2017 21:14:25'!
+!GOLTest methodsFor: 'testing' stamp: 'HAW 5/11/2017 21:14:25'!
 test04AliveCellWithMoreThanThreeAliveNeighDies
 
 	|gameOfLife |
@@ -53,7 +53,7 @@ test04AliveCellWithMoreThanThreeAliveNeighDies
 	
 	self assert: (gameOfLife isDeadAt: 1@1) ! !
 
-!GOLTest methodsFor: 'as yet unclassified' stamp: 'HAW 5/11/2017 21:01:13'!
+!GOLTest methodsFor: 'testing' stamp: 'HAW 5/11/2017 21:01:13'!
 test05DeadCellWithThreeAliveNeighResurects
 
 	|gameOfLife |
@@ -63,7 +63,7 @@ test05DeadCellWithThreeAliveNeighResurects
 	
 	self deny: (gameOfLife isDeadAt: 1@1) ! !
 
-!GOLTest methodsFor: 'as yet unclassified' stamp: 'DHS 5/12/2017 23:49:53'!
+!GOLTest methodsFor: 'testing' stamp: 'DHS 5/12/2017 23:49:53'!
 test06CannotAddAliveCellWithRowGreaterThanMaxRow
 	self 
 		should: [ GameOfLife withLiveCells: { 2@0. 1@0. 1@4 } withSize: 3@3 ]
@@ -71,7 +71,7 @@ test06CannotAddAliveCellWithRowGreaterThanMaxRow
 		withExceptionDo: [ :anError |
 			self assert: anError messageText equals: 'celda fuera de rango' ]! !
 
-!GOLTest methodsFor: 'as yet unclassified' stamp: 'DHS 5/12/2017 23:51:19'!
+!GOLTest methodsFor: 'testing' stamp: 'DHS 5/12/2017 23:51:19'!
 test07CannotAddAliveCellWithColumnGreaterThanMaxColumn
 	self 
 		should: [ GameOfLife withLiveCells: { 2@0. 1@0. 4@1 } withSize: 3@3 ]
@@ -79,7 +79,7 @@ test07CannotAddAliveCellWithColumnGreaterThanMaxColumn
 		withExceptionDo: [ :anError |
 			self assert: anError messageText equals: 'celda fuera de rango' ]! !
 
-!GOLTest methodsFor: 'as yet unclassified' stamp: 'DHS 5/12/2017 23:52:54'!
+!GOLTest methodsFor: 'testing' stamp: 'DHS 5/12/2017 23:52:54'!
 test08CannotAddAliveCellWithNegativeRow
 	self 
 		should: [ GameOfLife withLiveCells: { 2@0. 1@0. 1@(-1) } withSize: 3@3 ]
@@ -87,7 +87,7 @@ test08CannotAddAliveCellWithNegativeRow
 		withExceptionDo: [ :anError |
 			self assert: anError messageText equals: 'celda fuera de rango' ]! !
 
-!GOLTest methodsFor: 'as yet unclassified' stamp: 'DHS 5/12/2017 23:53:46'!
+!GOLTest methodsFor: 'testing' stamp: 'DHS 5/12/2017 23:53:46'!
 test09CannotAddAliveCellWithNegativeColumn
 	self 
 		should: [ GameOfLife withLiveCells: { 2@0. 1@0. (-1)@1 } withSize: 3@3 ]
@@ -95,7 +95,7 @@ test09CannotAddAliveCellWithNegativeColumn
 		withExceptionDo: [ :anError |
 			self assert: anError messageText equals: 'celda fuera de rango' ]! !
 
-!GOLTest methodsFor: 'as yet unclassified' stamp: 'DHS 5/14/2017 13:19:08'!
+!GOLTest methodsFor: 'testing' stamp: 'DHS 5/14/2017 13:19:08'!
 test10CannotAddAliveCellWithNonIntegerColumn
 	self 
 		should: [ GameOfLife withLiveCells: { 1.1@0 } withSize: 3@3 ]
@@ -103,7 +103,7 @@ test10CannotAddAliveCellWithNonIntegerColumn
 		withExceptionDo: [ :anError |
 			self assert: anError messageText equals: 'celda fuera de rango' ]! !
 
-!GOLTest methodsFor: 'as yet unclassified' stamp: 'DHS 5/14/2017 13:22:50'!
+!GOLTest methodsFor: 'testing' stamp: 'DHS 5/14/2017 13:22:50'!
 test11CannotAddAliveCellWithNonIntegerRow
 	self 
 		should: [ GameOfLife withLiveCells: { 1@1.1 } withSize: 3@3 ]
@@ -119,14 +119,16 @@ Object subclass: #CellState
 	poolDictionaries: ''
 	category: 'GOL'!
 
-!CellState methodsFor: 'as yet unclassified' stamp: 'DHS 5/14/2017 12:39:24'!
-aliveInNextGeneration
-	self subclassResponsibility.! !
-
-!CellState methodsFor: 'as yet unclassified' stamp: 'DHS 5/14/2017 12:50:30'!
+!CellState methodsFor: 'initialization' stamp: 'masch 5/14/2017 20:34:11'!
 initializeWithGame: aGameOfLife andCell: aCell
+
 	gameOfLife := aGameOfLife.
 	cell := aCell.! !
+
+
+!CellState methodsFor: 'cell generation' stamp: 'masch 5/14/2017 20:36:19'!
+aliveInNextGeneration
+	self subclassResponsibility.! !
 
 "-- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- "!
 
@@ -134,32 +136,32 @@ initializeWithGame: aGameOfLife andCell: aCell
 CellState class
 	instanceVariableNames: ''!
 
-!CellState class methodsFor: 'as yet unclassified' stamp: 'DHS 5/14/2017 13:00:25'!
+!CellState class methodsFor: 'instance creation' stamp: 'masch 5/14/2017 19:19:26'!
 withGame: aGameOfLife andCell: aCell
 	
 	self new initializeWithGame: aGameOfLife andCell: aCell! !
 
 
-!classDefinition: #AliveCell category: #GOL!
-CellState subclass: #AliveCell
+!classDefinition: #AliveCellState category: #GOL!
+CellState subclass: #AliveCellState
 	instanceVariableNames: ''
 	classVariableNames: ''
 	poolDictionaries: ''
 	category: 'GOL'!
 
-!AliveCell methodsFor: 'as yet unclassified' stamp: 'DHS 5/14/2017 12:46:41'!
+!AliveCellState methodsFor: 'cell generation' stamp: 'DHS 5/14/2017 12:46:41'!
 aliveInNextGeneration
 	gameOfLife aliveInNextGenerationAliveCell: cell! !
 
 
-!classDefinition: #DeadCell category: #GOL!
-CellState subclass: #DeadCell
+!classDefinition: #DeadCellState category: #GOL!
+CellState subclass: #DeadCellState
 	instanceVariableNames: ''
 	classVariableNames: ''
 	poolDictionaries: ''
 	category: 'GOL'!
 
-!DeadCell methodsFor: 'as yet unclassified' stamp: 'DHS 5/14/2017 12:49:03'!
+!DeadCellState methodsFor: 'cell generation' stamp: 'DHS 5/14/2017 12:49:03'!
 aliveInNextGeneration
 	gameOfLife aliveInNextGenerationDeadCell: cell! !
 
@@ -171,28 +173,20 @@ Object subclass: #GameOfLife
 	poolDictionaries: ''
 	category: 'GOL'!
 
-!GameOfLife methodsFor: 'as yet unclassified' stamp: 'DHS 5/12/2017 23:58:23'!
-initializeWith: aCollectionOfAliveCells withSize: aSize
-
-	size := aSize.
-	aliveCells := aCollectionOfAliveCells.
-	! !
-
-!GameOfLife methodsFor: 'as yet unclassified' stamp: 'DHS 5/14/2017 12:55:40'!
+!GameOfLife methodsFor: 'public' stamp: 'masch 5/14/2017 20:33:11'!
 nextGeneration
 	
 	aliveCells := self gameCells select: [:aCell | (self isAliveAt: aCell) 
 			ifTrue: [self isAliveInNextGenerationAliveCell: aCell ]
 			ifFalse: [self isAliveInNextGenerationDeadCell: aCell]
-	]
-! !
+	]! !
 
 
-!GameOfLife methodsFor: 'private' stamp: 'DHS 5/14/2017 13:02:12'!
+!GameOfLife methodsFor: 'private' stamp: 'masch 5/14/2017 20:38:14'!
 cellState: aCell
 	^(self isAliveAt: aCell)
-			ifTrue: [AliveCell withGame: self andCell: aCell]
-			ifFalse: [DeadCell withGame: self andCell: aCell]
+			ifTrue: [AliveCellState withGame: self andCell: aCell]
+			ifFalse: [DeadCellState withGame: self andCell: aCell]
 ! !
 
 !GameOfLife methodsFor: 'private' stamp: 'DHS 5/13/2017 00:12:06'!
@@ -249,29 +243,37 @@ numberOfAliveNeighboursOf: aCell
 
 	^(aCell eightNeighbors intersection: aliveCells) size! !
 
+
+!GameOfLife methodsFor: 'initialization' stamp: 'masch 5/14/2017 20:32:22'!
+initializeWith: aCollectionOfAliveCells withSize: aSize
+
+	size := aSize.
+	aliveCells := aCollectionOfAliveCells.! !
+
 "-- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- "!
 
 !classDefinition: 'GameOfLife class' category: #GOL!
 GameOfLife class
 	instanceVariableNames: ''!
 
-!GameOfLife class methodsFor: 'as yet unclassified' stamp: 'DHS 5/14/2017 13:27:25'!
-validColumn: aCell withSize: upperTopPoint
-	^self validCoord: aCell x withMaxValue: upperTopPoint x.
+!GameOfLife class methodsFor: 'validation' stamp: 'masch 5/14/2017 20:29:54'!
+validateColumn: aCell withSize: upperTopPoint
+	^self validateCoordinate: aCell x withMaxValue: upperTopPoint x.
 ! !
 
-!GameOfLife class methodsFor: 'as yet unclassified' stamp: 'DHS 5/14/2017 13:24:44'!
-validCoord: aCoordinate withMaxValue: maxValue
+!GameOfLife class methodsFor: 'validation' stamp: 'masch 5/14/2017 20:23:36'!
+validateCoordinate: aCoordinate withMaxValue: maxValue
 	^(aCoordinate isKindOf: Integer) and: [aCoordinate between: 0 and: maxValue]! !
 
-!GameOfLife class methodsFor: 'as yet unclassified' stamp: 'DHS 5/14/2017 13:27:49'!
-validRow: aCell withSize: upperTopPoint
-	^self validCoord: aCell y withMaxValue: upperTopPoint y.! !
+!GameOfLife class methodsFor: 'validation' stamp: 'masch 5/14/2017 20:29:59'!
+validateRow: aCell withSize: upperTopPoint
+	^self validateCoordinate: aCell y withMaxValue: upperTopPoint y.! !
 
-!GameOfLife class methodsFor: 'as yet unclassified' stamp: 'DHS 5/14/2017 13:18:48'!
+
+!GameOfLife class methodsFor: 'instance creation' stamp: 'masch 5/14/2017 20:28:13'!
 withLiveCells: aCollectionOfAliveCells withSize: upperTopPoint 
 
 	(aCollectionOfAliveCells allSatisfy: [:aCell |
-		(self validColumn: aCell withSize: upperTopPoint ) and: [self validRow: aCell withSize: upperTopPoint]]) ifFalse: [ self error: 'celda fuera de rango' ].
+		(self validateColumn: aCell withSize: upperTopPoint ) and: [self validateRow: aCell withSize: upperTopPoint]]) ifFalse: [ self error: 'celda fuera de rango' ].
 	
 	^self new initializeWith: aCollectionOfAliveCells withSize: upperTopPoint ! !
