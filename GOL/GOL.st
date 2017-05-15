@@ -111,20 +111,18 @@ Object subclass: #CellState
 	poolDictionaries: ''
 	category: 'GOL'!
 
-!CellState methodsFor: 'initialization' stamp: 'masch 5/14/2017 20:34:11'!
-initializeWithGame: aGameOfLife andCell: aCell
-
-	gameOfLife := aGameOfLife.
-	cell := aCell.! !
-
-
 "-- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- "!
 
 !classDefinition: 'CellState class' category: #GOL!
 CellState class
 	instanceVariableNames: ''!
 
-!CellState class methodsFor: 'instance creation' stamp: 'PEP 5/14/2017 23:16:01'!
+!CellState class methodsFor: 'state selection' stamp: 'masch 5/15/2017 06:12:48'!
+canHandle: aCell in: aGameOfLife
+
+	self subclassResponsibility ! !
+
+!CellState class methodsFor: 'state selection' stamp: 'PEP 5/14/2017 23:16:01'!
 stateFor: aCell in: aGameOfLife
 	
 	^self allSubclasses detect: [:aCellStateClass | aCellStateClass canHandle: aCell in: aGameOfLife]! !
@@ -137,8 +135,9 @@ CellState subclass: #AliveCellState
 	poolDictionaries: ''
 	category: 'GOL'!
 
-!AliveCellState methodsFor: 'cell generation' stamp: 'PEP 5/15/2017 00:22:39'!
+!AliveCellState methodsFor: 'cell generation' stamp: 'masch 5/15/2017 06:17:17'!
 is: aCell aliveInNextGenerationIn: aGameOfLife
+
 	^aGameOfLife hasToSurvive: aCell! !
 
 "-- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- "!
@@ -160,8 +159,9 @@ CellState subclass: #DeadCellState
 	poolDictionaries: ''
 	category: 'GOL'!
 
-!DeadCellState methodsFor: 'cell generation' stamp: 'PEP 5/15/2017 00:22:13'!
+!DeadCellState methodsFor: 'cell generation' stamp: 'masch 5/15/2017 06:17:24'!
 is: aCell aliveInNextGenerationIn: aGameOfLife
+
 	^aGameOfLife hasToResurrect: aCell! !
 
 "-- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- "!
@@ -183,14 +183,15 @@ Object subclass: #GameOfLife
 	poolDictionaries: ''
 	category: 'GOL'!
 
-!GameOfLife methodsFor: 'public' stamp: 'PEP 5/15/2017 00:18:57'!
+!GameOfLife methodsFor: 'public' stamp: 'masch 5/15/2017 06:32:19'!
 nextGeneration
 	
-	aliveCells := self gameCells select: [:aCell | (self cellStateFor: aCell) is: aCell aliveInNextGenerationIn: self]! !
+	aliveCells := self gameCells select: [:aCell | ((self cellStateFor: aCell) is: aCell aliveInNextGenerationIn: self)]! !
 
 
-!GameOfLife methodsFor: 'private' stamp: 'PEP 5/14/2017 23:47:19'!
+!GameOfLife methodsFor: 'private' stamp: 'masch 5/15/2017 06:22:52'!
 cellStateFor: aCell
+
 	^(CellState stateFor: aCell in: self) new
 ! !
 
@@ -216,10 +217,10 @@ hasToResurrect: aCell
 
 	^(self numberOfAliveNeighboursOf: aCell) = 3! !
 
-!GameOfLife methodsFor: 'private' stamp: 'HAW 5/11/2017 19:57:05'!
+!GameOfLife methodsFor: 'private' stamp: 'masch 5/15/2017 06:54:45'!
 hasToSurvive: aCell
 	
-	| numberOfAliveNeighbours|
+	| numberOfAliveNeighbours |
 	
 	numberOfAliveNeighbours := self numberOfAliveNeighboursOf: aCell.
 	
@@ -253,24 +254,38 @@ initializeWith: aCollectionOfAliveCells withSize: aSize
 GameOfLife class
 	instanceVariableNames: ''!
 
-!GameOfLife class methodsFor: 'validation' stamp: 'masch 5/14/2017 20:29:54'!
+!GameOfLife class methodsFor: 'validation' stamp: 'masch 5/15/2017 07:58:39'!
+validateCell: aCell withSize: aSize
+
+	^(self validateColumn: aCell withSize: aSize) and: [self validateRow: aCell withSize: aSize].
+! !
+
+!GameOfLife class methodsFor: 'validation' stamp: 'masch 5/15/2017 08:07:06'!
+validateCells: aCollectionOfCells withSize: aSize
+
+	(aCollectionOfCells allSatisfy: [:aCell | 
+		self validateCell: aCell withSize: aSize]) ifFalse: [ self error: 'celda fuera de rango' ].! !
+
+!GameOfLife class methodsFor: 'validation' stamp: 'masch 5/15/2017 08:07:59'!
 validateColumn: aCell withSize: upperTopPoint
+
 	^self validateCoordinate: aCell x withMaxValue: upperTopPoint x.
 ! !
 
-!GameOfLife class methodsFor: 'validation' stamp: 'masch 5/14/2017 20:23:36'!
+!GameOfLife class methodsFor: 'validation' stamp: 'masch 5/15/2017 08:07:46'!
 validateCoordinate: aCoordinate withMaxValue: maxValue
+
 	^(aCoordinate isKindOf: Integer) and: [aCoordinate between: 0 and: maxValue]! !
 
-!GameOfLife class methodsFor: 'validation' stamp: 'masch 5/14/2017 20:29:59'!
+!GameOfLife class methodsFor: 'validation' stamp: 'masch 5/15/2017 08:07:50'!
 validateRow: aCell withSize: upperTopPoint
+
 	^self validateCoordinate: aCell y withMaxValue: upperTopPoint y.! !
 
 
-!GameOfLife class methodsFor: 'instance creation' stamp: 'masch 5/14/2017 20:28:13'!
+!GameOfLife class methodsFor: 'instance creation' stamp: 'masch 5/15/2017 08:06:06'!
 withLiveCells: aCollectionOfAliveCells withSize: upperTopPoint 
-
-	(aCollectionOfAliveCells allSatisfy: [:aCell |
-		(self validateColumn: aCell withSize: upperTopPoint ) and: [self validateRow: aCell withSize: upperTopPoint]]) ifFalse: [ self error: 'celda fuera de rango' ].
+	
+	self validateCells: aCollectionOfAliveCells withSize: upperTopPoint.
 	
 	^self new initializeWith: aCollectionOfAliveCells withSize: upperTopPoint ! !
