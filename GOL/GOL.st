@@ -5,14 +5,6 @@ TestCase subclass: #GOLTest
 	poolDictionaries: ''
 	category: 'GOL'!
 
-!GOLTest methodsFor: 'testing' stamp: 'DHS 5/14/2017 13:10:59'!
-atest10CannotAddAliveCellWithNonIntegerColumn
-	self 
-		should: [ GameOfLife withLiveCells: { 1.1@0 } withSize: 3@3 ]
-		raise: Error - MessageNotUnderstood 
-		withExceptionDo: [ :anError |
-			self assert: anError messageText equals: 'celda fuera de rango' ]! !
-
 !GOLTest methodsFor: 'testing' stamp: 'HAW 5/11/2017 21:14:07'!
 test01AliveCellWithLessThanTwoAliveNeighDies
 
@@ -114,7 +106,7 @@ test11CannotAddAliveCellWithNonIntegerRow
 
 !classDefinition: #CellState category: #GOL!
 Object subclass: #CellState
-	instanceVariableNames: 'gameOfLife cell'
+	instanceVariableNames: ''
 	classVariableNames: ''
 	poolDictionaries: ''
 	category: 'GOL'!
@@ -126,20 +118,16 @@ initializeWithGame: aGameOfLife andCell: aCell
 	cell := aCell.! !
 
 
-!CellState methodsFor: 'cell generation' stamp: 'masch 5/14/2017 20:36:19'!
-aliveInNextGeneration
-	self subclassResponsibility.! !
-
 "-- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- "!
 
 !classDefinition: 'CellState class' category: #GOL!
 CellState class
 	instanceVariableNames: ''!
 
-!CellState class methodsFor: 'instance creation' stamp: 'masch 5/14/2017 19:19:26'!
-withGame: aGameOfLife andCell: aCell
+!CellState class methodsFor: 'instance creation' stamp: 'PEP 5/14/2017 23:16:01'!
+stateFor: aCell in: aGameOfLife
 	
-	self new initializeWithGame: aGameOfLife andCell: aCell! !
+	^self allSubclasses detect: [:aCellStateClass | aCellStateClass canHandle: aCell in: aGameOfLife]! !
 
 
 !classDefinition: #AliveCellState category: #GOL!
@@ -149,9 +137,20 @@ CellState subclass: #AliveCellState
 	poolDictionaries: ''
 	category: 'GOL'!
 
-!AliveCellState methodsFor: 'cell generation' stamp: 'DHS 5/14/2017 12:46:41'!
-aliveInNextGeneration
-	gameOfLife aliveInNextGenerationAliveCell: cell! !
+!AliveCellState methodsFor: 'cell generation' stamp: 'PEP 5/15/2017 00:22:39'!
+is: aCell aliveInNextGenerationIn: aGameOfLife
+	^aGameOfLife hasToSurvive: aCell! !
+
+"-- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- "!
+
+!classDefinition: 'AliveCellState class' category: #GOL!
+AliveCellState class
+	instanceVariableNames: ''!
+
+!AliveCellState class methodsFor: 'as yet unclassified' stamp: 'PEP 5/14/2017 23:19:06'!
+canHandle: aCell in: aGameOfLife
+
+	^aGameOfLife isAliveAt: aCell! !
 
 
 !classDefinition: #DeadCellState category: #GOL!
@@ -161,9 +160,20 @@ CellState subclass: #DeadCellState
 	poolDictionaries: ''
 	category: 'GOL'!
 
-!DeadCellState methodsFor: 'cell generation' stamp: 'DHS 5/14/2017 12:49:03'!
-aliveInNextGeneration
-	gameOfLife aliveInNextGenerationDeadCell: cell! !
+!DeadCellState methodsFor: 'cell generation' stamp: 'PEP 5/15/2017 00:22:13'!
+is: aCell aliveInNextGenerationIn: aGameOfLife
+	^aGameOfLife hasToResurrect: aCell! !
+
+"-- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- "!
+
+!classDefinition: 'DeadCellState class' category: #GOL!
+DeadCellState class
+	instanceVariableNames: ''!
+
+!DeadCellState class methodsFor: 'as yet unclassified' stamp: 'PEP 5/14/2017 23:19:43'!
+canHandle: aCell in: aGameOfLife
+
+	^aGameOfLife isDeadAt: aCell! !
 
 
 !classDefinition: #GameOfLife category: #GOL!
@@ -173,20 +183,15 @@ Object subclass: #GameOfLife
 	poolDictionaries: ''
 	category: 'GOL'!
 
-!GameOfLife methodsFor: 'public' stamp: 'masch 5/14/2017 20:33:11'!
+!GameOfLife methodsFor: 'public' stamp: 'PEP 5/15/2017 00:18:57'!
 nextGeneration
 	
-	aliveCells := self gameCells select: [:aCell | (self isAliveAt: aCell) 
-			ifTrue: [self isAliveInNextGenerationAliveCell: aCell ]
-			ifFalse: [self isAliveInNextGenerationDeadCell: aCell]
-	]! !
+	aliveCells := self gameCells select: [:aCell | (self cellStateFor: aCell) is: aCell aliveInNextGenerationIn: self]! !
 
 
-!GameOfLife methodsFor: 'private' stamp: 'masch 5/14/2017 20:38:14'!
-cellState: aCell
-	^(self isAliveAt: aCell)
-			ifTrue: [AliveCellState withGame: self andCell: aCell]
-			ifFalse: [DeadCellState withGame: self andCell: aCell]
+!GameOfLife methodsFor: 'private' stamp: 'PEP 5/14/2017 23:47:19'!
+cellStateFor: aCell
+	^(CellState stateFor: aCell in: self) new
 ! !
 
 !GameOfLife methodsFor: 'private' stamp: 'DHS 5/13/2017 00:12:06'!
@@ -206,7 +211,7 @@ gameCells
 			gameCells add: x@y]].
 	^gameCells ! !
 
-!GameOfLife methodsFor: 'private' stamp: 'HAW 5/11/2017 21:11:17'!
+!GameOfLife methodsFor: 'private' stamp: 'PEP 5/15/2017 00:21:58'!
 hasToResurrect: aCell
 
 	^(self numberOfAliveNeighboursOf: aCell) = 3! !
@@ -224,14 +229,6 @@ hasToSurvive: aCell
 isAliveAt: aCell
 
 	^aliveCells includes: aCell! !
-
-!GameOfLife methodsFor: 'private' stamp: 'DHS 5/14/2017 12:52:44'!
-isAliveInNextGenerationAliveCell: aCell 
-	^self hasToSurvive: aCell! !
-
-!GameOfLife methodsFor: 'private' stamp: 'DHS 5/14/2017 12:54:56'!
-isAliveInNextGenerationDeadCell: aCell
-	^self hasToSurvive: aCell! !
 
 !GameOfLife methodsFor: 'private' stamp: 'DHS 5/13/2017 00:06:52'!
 isDeadAt: aCell
