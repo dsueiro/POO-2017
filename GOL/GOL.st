@@ -111,6 +111,11 @@ Object subclass: #CellState
 	poolDictionaries: ''
 	category: 'GOL'!
 
+!CellState methodsFor: 'cell generation' stamp: 'PEP 5/15/2017 22:16:38'!
+is: aCell aliveInNextGenerationIn: aGameOfLife
+
+	self subclassResponsibility! !
+
 "-- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- "!
 
 !classDefinition: 'CellState class' category: #GOL!
@@ -183,10 +188,10 @@ Object subclass: #GameOfLife
 	poolDictionaries: ''
 	category: 'GOL'!
 
-!GameOfLife methodsFor: 'public' stamp: 'masch 5/15/2017 06:32:19'!
+!GameOfLife methodsFor: 'public' stamp: 'PEP 5/15/2017 22:23:59'!
 nextGeneration
 	
-	aliveCells := self gameCells select: [:aCell | ((self cellStateFor: aCell) is: aCell aliveInNextGenerationIn: self)]! !
+	aliveCells := self gameCells select: [:aCell | (self cellStateFor: aCell) is: aCell aliveInNextGenerationIn: self]! !
 
 
 !GameOfLife methodsFor: 'private' stamp: 'masch 5/15/2017 06:22:52'!
