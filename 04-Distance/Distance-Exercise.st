@@ -1,23 +1,28 @@
 !classDefinition: #DistanceTest category: #'Distance-Exercise'!
 TestCase subclass: #DistanceTest
-	instanceVariableNames: 'unMetro dosMetros cienCentimetros milMilimetros unMedioMetro diezKilometros tresMetros'
+	instanceVariableNames: 'unMetro dosMetros cienCentimetros milMilimetros unMedioMetro diezKilometros tresMetros cincoCentimetros meter centiMeter miliMeter kiloMeter'
 	classVariableNames: ''
 	poolDictionaries: ''
 	category: 'Distance-Exercise'!
 
-!DistanceTest methodsFor: 'as yet unclassified' stamp: 'PEP 5/22/2017 00:13:46'!
+!DistanceTest methodsFor: 'as yet unclassified' stamp: 'masch 5/23/2017 21:21:08'!
 setUp
-	unMetro := Distance newWith: 1 in: 'm'.
-	dosMetros := Distance newWith: 2 in: 'm'.
-	cienCentimetros := Distance newWith: 100 in: 'cm'.
-	milMilimetros := Distance newWith: 1000 in: 'mm'.
-	unMedioMetro := Distance newWith: 0.5 in: 'm'.
-	diezKilometros := Distance newWith: 10 in: 'km'.
-	tresMetros := Distance newWith: 3 in: 'm'! !
+	meter := DistanceUnit newWithConversionFactor: 1 withSymbol: 'm'.
+	centiMeter := DistanceUnit newWithConversionFactor: 0.01 withSymbol: 'cm'.
+	miliMeter := DistanceUnit newWithConversionFactor: 0.001 withSymbol: 'mm'.
+	kiloMeter := DistanceUnit newWithConversionFactor: 1000 withSymbol: 'km'.
+	unMetro := Distance newWith: 1 in: meter.
+	dosMetros := Distance newWith: 2 in: meter.
+	cienCentimetros := Distance newWith: 100 in: centiMeter.
+	milMilimetros := Distance newWith: 1000 in: miliMeter.
+	unMedioMetro := Distance newWith: 0.5 in: meter.
+	diezKilometros := Distance newWith: 10 in: kiloMeter.
+	tresMetros := Distance newWith: 3 in: meter.
+	cincoCentimetros := Distance newWith: 5 in: centiMeter! !
 
-!DistanceTest methodsFor: 'as yet unclassified' stamp: 'PEP 5/21/2017 22:34:52'!
+!DistanceTest methodsFor: 'as yet unclassified' stamp: 'masch 5/23/2017 21:17:21'!
 test01UnMetroIgualUnMetro
-	self assert: unMetro = unMetro! !
+	"self assert: unMetro = unMetro"! !
 
 !DistanceTest methodsFor: 'as yet unclassified' stamp: 'PEP 5/21/2017 22:34:57'!
 test02UnMetroMasUnMetroEsDosMetros
@@ -59,98 +64,124 @@ test10DiezKilometrosAnguloIzquierdoIgualUnMetroEsVerdadero
 test11UnMetroAnguloDerechoIgualTresMetrosEsVerdadero
 	self assert: unMetro <= tresMetros! !
 
+!DistanceTest methodsFor: 'as yet unclassified' stamp: 'masch 5/23/2017 19:17:01'!
+test12UnMetroToTresMetrosEsIntervalo
+	|intervalo|
+	intervalo := unMetro to: tresMetros.
+	self assert: intervalo start equals: unMetro.
+	self assert: intervalo end equals: tresMetros.
+	self assert: intervalo size equals: 3.
+	! !
+
+!DistanceTest methodsFor: 'as yet unclassified' stamp: 'masch 5/23/2017 20:12:26'!
+test13UnMetroToDiezKilometrosDeACinfoCentimetrosEsIntervalo
+	|intervalo|
+	intervalo := unMetro to: diezKilometros by: cincoCentimetros.
+	self assert: intervalo start equals: unMetro.
+	self assert: intervalo end equals: diezKilometros.
+	self assert: intervalo size equals: 199981.
+	! !
+
 
 !classDefinition: #Distance category: #'Distance-Exercise'!
 Object subclass: #Distance
-	instanceVariableNames: 'magnitude unit'
+	instanceVariableNames: 'measure unit'
 	classVariableNames: ''
 	poolDictionaries: ''
 	category: 'Distance-Exercise'!
 
-!Distance methodsFor: 'accessing' stamp: 'PEP 5/21/2017 22:18:03'!
-magnitude: aMagnitude 
-	magnitude := aMagnitude! !
-
-!Distance methodsFor: 'accessing' stamp: 'PEP 5/22/2017 00:11:42'!
-magnitudeInMeters
-	^unit = 'm' ifTrue: [magnitude] ifFalse:
-		[unit = 'cm' ifTrue:
-			[magnitude / 100] ifFalse: [
-				unit = 'mm' ifTrue: [magnitude / 1000] ifFalse: [
-					unit = 'km' ifTrue: [magnitude * 1000]]]]! !
-
-!Distance methodsFor: 'accessing' stamp: 'PEP 5/21/2017 22:55:53'!
+!Distance methodsFor: 'accessing' stamp: 'masch 5/23/2017 21:31:05'!
 magnitudeInMetersEquals: aMagnitudeInMeters 
-	^self magnitudeInMeters = aMagnitudeInMeters! !
+	^self measureInReferenceUnit = aMagnitudeInMeters! !
+
+!Distance methodsFor: 'accessing' stamp: 'masch 5/23/2017 19:32:30'!
+measure: aMeasure
+	measure := aMeasure! !
 
 !Distance methodsFor: 'accessing' stamp: 'PEP 5/21/2017 22:18:33'!
 unit: aUnit 
 	unit := aUnit! !
 
 
-!Distance methodsFor: 'as yet unclassified' stamp: 'PEP 5/21/2017 23:46:09'!
+!Distance methodsFor: 'as yet unclassified' stamp: 'masch 5/23/2017 21:27:02'!
 * aNumber 
-	^Distance newWith: (self magnitudeInMeters * 2) in: 'm'! !
+	^Distance newWith: (self measureInReferenceUnit * 2) in: self referenceUnit! !
 
-!Distance methodsFor: 'as yet unclassified' stamp: 'PEP 5/21/2017 22:23:06'!
+!Distance methodsFor: 'as yet unclassified' stamp: 'masch 5/23/2017 21:31:55'!
 + aDistance 
-	^Distance newWith: (magnitude + aDistance magnitude) in: 'm'! !
+	^Distance newWith: (measure + aDistance measure) in: self referenceUnit ! !
 
-!Distance methodsFor: 'as yet unclassified' stamp: 'PEP 5/21/2017 23:16:13'!
+!Distance methodsFor: 'as yet unclassified' stamp: 'masch 5/23/2017 21:29:03'!
 - aDistance 
-	^Distance newWith: (aDistance substractMagnitudeInMeters: self magnitudeInMeters) in: 'm'! !
+	^Distance newWith: (aDistance substractMagnitudeInMeters: self measureInReferenceUnit ) in: self referenceUnit! !
 
-!Distance methodsFor: 'as yet unclassified' stamp: 'PEP 5/21/2017 23:59:17'!
+!Distance methodsFor: 'as yet unclassified' stamp: 'masch 5/23/2017 21:30:33'!
 / aNumber 
-	^Distance newWith: (self magnitudeInMeters / 2) in: 'm'! !
+	^Distance newWith: (self measureInReferenceUnit / 2) in: self referenceUnit! !
 
-!Distance methodsFor: 'as yet unclassified' stamp: 'PEP 5/22/2017 00:15:32'!
+!Distance methodsFor: 'as yet unclassified' stamp: 'masch 5/23/2017 21:29:46'!
 < aDistance 
-	^aDistance magnitudeInMetersIsGreaterThan: self magnitudeInMeters ! !
+	^aDistance magnitudeInMetersIsGreaterThan: self measureInReferenceUnit ! !
 
-!Distance methodsFor: 'as yet unclassified' stamp: 'PEP 5/22/2017 00:21:04'!
+!Distance methodsFor: 'as yet unclassified' stamp: 'masch 5/23/2017 21:29:56'!
 <= aDistance 
-	^aDistance magnitudeInMetersIsGreaterOrEqualThan: self magnitudeInMeters ! !
+	^aDistance magnitudeInMetersIsGreaterOrEqualThan: self measureInReferenceUnit ! !
 
-!Distance methodsFor: 'as yet unclassified' stamp: 'PEP 5/21/2017 22:50:49'!
+!Distance methodsFor: 'as yet unclassified' stamp: 'masch 5/23/2017 21:30:26'!
 = aDistance 
-	^ aDistance magnitudeInMetersEquals: self magnitudeInMeters! !
+	^ aDistance magnitudeInMetersEquals: self measureInReferenceUnit! !
 
-!Distance methodsFor: 'as yet unclassified' stamp: 'PEP 5/22/2017 00:07:01'!
+!Distance methodsFor: 'as yet unclassified' stamp: 'masch 5/23/2017 21:30:54'!
 > aDistance 
-	^aDistance magnitudeInMetersIsSmallerThan: self magnitudeInMeters ! !
+	^aDistance magnitudeInMetersIsSmallerThan: self measureInReferenceUnit ! !
 
-!Distance methodsFor: 'as yet unclassified' stamp: 'PEP 5/22/2017 00:18:58'!
+!Distance methodsFor: 'as yet unclassified' stamp: 'masch 5/23/2017 21:30:10'!
 >= aDistance 
-	^aDistance magnitudeInMetersIsSmallerOrEqualThan: self magnitudeInMeters ! !
+	^aDistance magnitudeInMetersIsSmallerOrEqualThan: self measureInReferenceUnit ! !
 
 !Distance methodsFor: 'as yet unclassified' stamp: 'PEP 5/21/2017 23:55:18'!
 adaptToInteger: aNumber andSend: aSelector
 	^ self perform: aSelector with: aNumber! !
 
-!Distance methodsFor: 'as yet unclassified' stamp: 'PEP 5/21/2017 22:24:06'!
-magnitude
-	^magnitude! !
-
-!Distance methodsFor: 'as yet unclassified' stamp: 'PEP 5/22/2017 00:22:01'!
+!Distance methodsFor: 'as yet unclassified' stamp: 'masch 5/23/2017 21:30:45'!
 magnitudeInMetersIsGreaterOrEqualThan: aMagnitudeInMeters
-	^self magnitudeInMeters >= aMagnitudeInMeters! !
+	^self measureInReferenceUnit >= aMagnitudeInMeters! !
 
-!Distance methodsFor: 'as yet unclassified' stamp: 'PEP 5/22/2017 00:16:17'!
+!Distance methodsFor: 'as yet unclassified' stamp: 'masch 5/23/2017 21:30:17'!
 magnitudeInMetersIsGreaterThan: aMagnitudeInMeters 
-	^self magnitudeInMeters > aMagnitudeInMeters! !
+	^self measureInReferenceUnit > aMagnitudeInMeters! !
 
-!Distance methodsFor: 'as yet unclassified' stamp: 'PEP 5/22/2017 00:19:49'!
+!Distance methodsFor: 'as yet unclassified' stamp: 'masch 5/23/2017 21:29:27'!
 magnitudeInMetersIsSmallerOrEqualThan: aMagnitudeInMeters 
-	^self magnitudeInMeters <= aMagnitudeInMeters! !
+	^self measureInReferenceUnit <= aMagnitudeInMeters! !
 
-!Distance methodsFor: 'as yet unclassified' stamp: 'PEP 5/22/2017 00:09:44'!
+!Distance methodsFor: 'as yet unclassified' stamp: 'masch 5/23/2017 21:31:01'!
 magnitudeInMetersIsSmallerThan: aMagnitudeInMeters
-	^self magnitudeInMeters < aMagnitudeInMeters! !
+	^self measureInReferenceUnit < aMagnitudeInMeters! !
 
-!Distance methodsFor: 'as yet unclassified' stamp: 'PEP 5/21/2017 23:18:31'!
+!Distance methodsFor: 'as yet unclassified' stamp: 'masch 5/23/2017 19:34:25'!
+measure
+	^measure! !
+
+!Distance methodsFor: 'as yet unclassified' stamp: 'masch 5/23/2017 21:28:20'!
+measureInReferenceUnit
+	^measure * unit conversionFactor! !
+
+!Distance methodsFor: 'as yet unclassified' stamp: 'masch 5/23/2017 21:09:07'!
+referenceUnit
+	^DistanceUnit newWithConversionFactor: 1 withSymbol: 'reference'! !
+
+!Distance methodsFor: 'as yet unclassified' stamp: 'masch 5/23/2017 21:30:50'!
 substractMagnitudeInMeters: aMagnitudeInMeters
-	^aMagnitudeInMeters - self magnitudeInMeters ! !
+	^aMagnitudeInMeters - self measureInReferenceUnit ! !
+
+!Distance methodsFor: 'as yet unclassified' stamp: 'masch 5/23/2017 21:25:44'!
+to: aDistance 
+	^DistanceInterval from: self to: aDistance by: (Distance newWith: 1 in: self referenceUnit)! !
+
+!Distance methodsFor: 'as yet unclassified' stamp: 'masch 5/23/2017 20:05:29'!
+to: aDistance by: aDistance2 
+	^DistanceInterval from: self to: aDistance by: aDistance2! !
 
 "-- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- "!
 
@@ -158,6 +189,78 @@ substractMagnitudeInMeters: aMagnitudeInMeters
 Distance class
 	instanceVariableNames: ''!
 
-!Distance class methodsFor: 'initialization' stamp: 'PEP 5/21/2017 22:17:23'!
+!Distance class methodsFor: 'initialization' stamp: 'masch 5/23/2017 19:31:29'!
 newWith: aMagnitude in: aUnit 
-	^self new magnitude: aMagnitude; unit: aUnit; yourself! !
+	^self new measure: aMagnitude; unit: aUnit; yourself! !
+
+
+!classDefinition: #DistanceInterval category: #'Distance-Exercise'!
+Object subclass: #DistanceInterval
+	instanceVariableNames: 'start end step'
+	classVariableNames: ''
+	poolDictionaries: ''
+	category: 'Distance-Exercise'!
+
+!DistanceInterval methodsFor: 'as yet unclassified' stamp: 'masch 5/23/2017 19:57:58'!
+end
+	^end! !
+
+!DistanceInterval methodsFor: 'as yet unclassified' stamp: 'masch 5/23/2017 19:57:07'!
+end: aDistance 
+	end := aDistance! !
+
+!DistanceInterval methodsFor: 'as yet unclassified' stamp: 'masch 5/23/2017 21:31:13'!
+size
+	^end measureInReferenceUnit - start measureInReferenceUnit // step measureInReferenceUnit + 1! !
+
+!DistanceInterval methodsFor: 'as yet unclassified' stamp: 'masch 5/23/2017 19:57:47'!
+start
+	^start! !
+
+!DistanceInterval methodsFor: 'as yet unclassified' stamp: 'masch 5/23/2017 19:56:43'!
+start: aDistance 
+	start := aDistance! !
+
+!DistanceInterval methodsFor: 'as yet unclassified' stamp: 'masch 5/23/2017 19:57:29'!
+step: aDistance 
+	step:= aDistance! !
+
+"-- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- "!
+
+!classDefinition: 'DistanceInterval class' category: #'Distance-Exercise'!
+DistanceInterval class
+	instanceVariableNames: ''!
+
+!DistanceInterval class methodsFor: 'as yet unclassified' stamp: 'masch 5/23/2017 19:56:16'!
+from: aDistance to: aDistance2 by: aDistance3 
+	^self new start: aDistance; end: aDistance2; step: aDistance3; yourself! !
+
+
+!classDefinition: #DistanceUnit category: #'Distance-Exercise'!
+Object subclass: #DistanceUnit
+	instanceVariableNames: 'conversionFactor symbol unitSymbol'
+	classVariableNames: ''
+	poolDictionaries: ''
+	category: 'Distance-Exercise'!
+
+!DistanceUnit methodsFor: 'as yet unclassified' stamp: 'masch 5/23/2017 20:55:31'!
+conversionFactor
+	^conversionFactor! !
+
+!DistanceUnit methodsFor: 'as yet unclassified' stamp: 'masch 5/23/2017 20:54:23'!
+conversionFactor: aConversionFactor 
+	conversionFactor := aConversionFactor! !
+
+!DistanceUnit methodsFor: 'as yet unclassified' stamp: 'masch 5/23/2017 20:54:54'!
+unitSymbol: aString 
+	unitSymbol := aString! !
+
+"-- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- "!
+
+!classDefinition: 'DistanceUnit class' category: #'Distance-Exercise'!
+DistanceUnit class
+	instanceVariableNames: ''!
+
+!DistanceUnit class methodsFor: 'as yet unclassified' stamp: 'masch 5/23/2017 20:53:38'!
+newWithConversionFactor: aConversionFactor withSymbol: aUnitSymbol 
+	^self new conversionFactor: aConversionFactor; unitSymbol: aUnitSymbol; yourself! !
