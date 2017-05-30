@@ -82,22 +82,22 @@ test13UnMetroToDiezKilometrosDeACinfoCentimetrosEsIntervalo
 	self assert: intervalo size equals: 199981.
 	! !
 
-!DistanceTest methodsFor: 'as yet unclassified' stamp: 'DHS 5/30/2017 08:05:50'!
-test14
+!DistanceTest methodsFor: 'as yet unclassified' stamp: 'DHS 5/30/2017 08:30:20'!
+test14DistanceFactoryCanCreateOneMeter
 	|factory|
 	factory := DistanceFactory new.
 	self assert: factory oneMeter equals: unMetro.
 	! !
 
-!DistanceTest methodsFor: 'as yet unclassified' stamp: 'DHS 5/30/2017 08:10:56'!
-test15
+!DistanceTest methodsFor: 'as yet unclassified' stamp: 'DHS 5/30/2017 08:30:58'!
+test15DistanceFactoryCanCreateTwoMeters
 	|factory|
 	factory := DistanceFactory new.
 	self assert: factory twoMeters equals: unMetro * 2.
 	! !
 
-!DistanceTest methodsFor: 'as yet unclassified' stamp: 'DHS 5/30/2017 08:22:28'!
-test16
+!DistanceTest methodsFor: 'as yet unclassified' stamp: 'DHS 5/30/2017 08:31:23'!
+test16CanCreateOneHundredCentimeters
 	|factory|
 	factory := DistanceFactory new.
 	self assert: factory oneHundredCentimeters equals: cienCentimetros. 
@@ -105,6 +105,13 @@ test16
 
 !DistanceTest methodsFor: 'as yet unclassified' stamp: 'DHS 5/30/2017 08:22:43'!
 test17
+	|factory|
+	factory := DistanceFactory new.
+	self assert: factory twoHundredCentimeters equals: cienCentimetros * 2. 
+	! !
+
+!DistanceTest methodsFor: 'as yet unclassified' stamp: 'DHS 5/30/2017 08:31:49'!
+test17CanCreateTwoHundredCentimeters
 	|factory|
 	factory := DistanceFactory new.
 	self assert: factory twoHundredCentimeters equals: cienCentimetros * 2. 
