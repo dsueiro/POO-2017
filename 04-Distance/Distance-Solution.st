@@ -1,3 +1,61 @@
+!classDefinition: #DistanceInterval category: #'Distance-Solution'!
+SequenceableCollection subclass: #DistanceInterval
+	instanceVariableNames: 'start end step'
+	classVariableNames: ''
+	poolDictionaries: ''
+	category: 'Distance-Solution'!
+
+!DistanceInterval methodsFor: 'as yet unclassified' stamp: 'DHS 5/30/2017 18:35:00'!
+at: i
+	| count |
+	count := self size.
+	(i >= 1 and: [i <= count])
+		ifTrue: [
+			count=1 ifTrue: [ ^start ].
+			^start + ((start-start)/(count-1)*(i-1))]
+		ifFalse: [self errorSubscriptBounds: i]! !
+
+!DistanceInterval methodsFor: 'as yet unclassified' stamp: 'DHS 5/30/2017 18:34:28'!
+do: aBlock
+
+	1 to: self size do: [ :i |
+		aBlock value: (self at: i) ]! !
+
+!DistanceInterval methodsFor: 'as yet unclassified' stamp: 'masch 5/23/2017 19:57:58'!
+end
+	^end! !
+
+!DistanceInterval methodsFor: 'as yet unclassified' stamp: 'masch 5/23/2017 19:57:07'!
+end: aDistance 
+	end := aDistance! !
+
+!DistanceInterval methodsFor: 'as yet unclassified' stamp: 'masch 5/23/2017 21:31:13'!
+size
+	^end measureInReferenceUnit - start measureInReferenceUnit // step measureInReferenceUnit + 1! !
+
+!DistanceInterval methodsFor: 'as yet unclassified' stamp: 'masch 5/23/2017 19:57:47'!
+start
+	^start! !
+
+!DistanceInterval methodsFor: 'as yet unclassified' stamp: 'masch 5/23/2017 19:56:43'!
+start: aDistance 
+	start := aDistance! !
+
+!DistanceInterval methodsFor: 'as yet unclassified' stamp: 'masch 5/23/2017 19:57:29'!
+step: aDistance 
+	step:= aDistance! !
+
+"-- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- "!
+
+!classDefinition: 'DistanceInterval class' category: #'Distance-Solution'!
+DistanceInterval class
+	instanceVariableNames: ''!
+
+!DistanceInterval class methodsFor: 'as yet unclassified' stamp: 'masch 5/23/2017 19:56:16'!
+from: aDistance to: aDistance2 by: aDistance3 
+	^self new start: aDistance; end: aDistance2; step: aDistance3; yourself! !
+
+
 !classDefinition: #DistanceTest category: #'Distance-Solution'!
 TestCase subclass: #DistanceTest
 	instanceVariableNames: 'unMetro dosMetros cienCentimetros milMilimetros unMedioMetro diezKilometros tresMetros cincoCentimetros meter centiMeter miliMeter kiloMeter'
@@ -218,6 +276,10 @@ to: aDistance
 to: aDistance by: aDistance2 
 	^DistanceInterval from: self to: aDistance by: aDistance2! !
 
+!Distance methodsFor: 'as yet unclassified' stamp: 'DHS 5/30/2017 18:34:04'!
+to: aDistance by: aDistance2 do: aBlock
+	^(self to: aDistance by: aDistance) do: aBlock! !
+
 "-- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- "!
 
 !classDefinition: 'Distance class' category: #'Distance-Solution'!
@@ -276,48 +338,6 @@ twoMeters
 !DistanceFactory methodsFor: 'as yet unclassified' stamp: 'DHS 5/30/2017 08:13:50'!
 zeroMeters
 	^Distance newWith: 0 in: self meter.! !
-
-
-!classDefinition: #DistanceInterval category: #'Distance-Solution'!
-Object subclass: #DistanceInterval
-	instanceVariableNames: 'start end step'
-	classVariableNames: ''
-	poolDictionaries: ''
-	category: 'Distance-Solution'!
-
-!DistanceInterval methodsFor: 'as yet unclassified' stamp: 'masch 5/23/2017 19:57:58'!
-end
-	^end! !
-
-!DistanceInterval methodsFor: 'as yet unclassified' stamp: 'masch 5/23/2017 19:57:07'!
-end: aDistance 
-	end := aDistance! !
-
-!DistanceInterval methodsFor: 'as yet unclassified' stamp: 'masch 5/23/2017 21:31:13'!
-size
-	^end measureInReferenceUnit - start measureInReferenceUnit // step measureInReferenceUnit + 1! !
-
-!DistanceInterval methodsFor: 'as yet unclassified' stamp: 'masch 5/23/2017 19:57:47'!
-start
-	^start! !
-
-!DistanceInterval methodsFor: 'as yet unclassified' stamp: 'masch 5/23/2017 19:56:43'!
-start: aDistance 
-	start := aDistance! !
-
-!DistanceInterval methodsFor: 'as yet unclassified' stamp: 'masch 5/23/2017 19:57:29'!
-step: aDistance 
-	step:= aDistance! !
-
-"-- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- "!
-
-!classDefinition: 'DistanceInterval class' category: #'Distance-Solution'!
-DistanceInterval class
-	instanceVariableNames: ''!
-
-!DistanceInterval class methodsFor: 'as yet unclassified' stamp: 'masch 5/23/2017 19:56:16'!
-from: aDistance to: aDistance2 by: aDistance3 
-	^self new start: aDistance; end: aDistance2; step: aDistance3; yourself! !
 
 
 !classDefinition: #DistanceUnit category: #'Distance-Solution'!
