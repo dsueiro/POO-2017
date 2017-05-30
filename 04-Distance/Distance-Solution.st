@@ -1,9 +1,9 @@
-!classDefinition: #DistanceTest category: #'Distance-Exercise'!
+!classDefinition: #DistanceTest category: #'Distance-Solution'!
 TestCase subclass: #DistanceTest
 	instanceVariableNames: 'unMetro dosMetros cienCentimetros milMilimetros unMedioMetro diezKilometros tresMetros cincoCentimetros meter centiMeter miliMeter kiloMeter'
 	classVariableNames: ''
 	poolDictionaries: ''
-	category: 'Distance-Exercise'!
+	category: 'Distance-Solution'!
 
 !DistanceTest methodsFor: 'as yet unclassified' stamp: 'masch 5/23/2017 21:21:08'!
 setUp
@@ -83,12 +83,12 @@ test13UnMetroToDiezKilometrosDeACinfoCentimetrosEsIntervalo
 	! !
 
 
-!classDefinition: #Distance category: #'Distance-Exercise'!
+!classDefinition: #Distance category: #'Distance-Solution'!
 Object subclass: #Distance
 	instanceVariableNames: 'measure unit'
 	classVariableNames: ''
 	poolDictionaries: ''
-	category: 'Distance-Exercise'!
+	category: 'Distance-Solution'!
 
 !Distance methodsFor: 'accessing' stamp: 'masch 5/23/2017 21:31:05'!
 magnitudeInMetersEquals: aMagnitudeInMeters 
@@ -185,7 +185,7 @@ to: aDistance by: aDistance2
 
 "-- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- "!
 
-!classDefinition: 'Distance class' category: #'Distance-Exercise'!
+!classDefinition: 'Distance class' category: #'Distance-Solution'!
 Distance class
 	instanceVariableNames: ''!
 
@@ -194,12 +194,12 @@ newWith: aMagnitude in: aUnit
 	^self new measure: aMagnitude; unit: aUnit; yourself! !
 
 
-!classDefinition: #DistanceInterval category: #'Distance-Exercise'!
+!classDefinition: #DistanceInterval category: #'Distance-Solution'!
 Object subclass: #DistanceInterval
 	instanceVariableNames: 'start end step'
 	classVariableNames: ''
 	poolDictionaries: ''
-	category: 'Distance-Exercise'!
+	category: 'Distance-Solution'!
 
 !DistanceInterval methodsFor: 'as yet unclassified' stamp: 'masch 5/23/2017 19:57:58'!
 end
@@ -227,7 +227,7 @@ step: aDistance
 
 "-- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- "!
 
-!classDefinition: 'DistanceInterval class' category: #'Distance-Exercise'!
+!classDefinition: 'DistanceInterval class' category: #'Distance-Solution'!
 DistanceInterval class
 	instanceVariableNames: ''!
 
@@ -236,12 +236,12 @@ from: aDistance to: aDistance2 by: aDistance3
 	^self new start: aDistance; end: aDistance2; step: aDistance3; yourself! !
 
 
-!classDefinition: #DistanceUnit category: #'Distance-Exercise'!
+!classDefinition: #DistanceUnit category: #'Distance-Solution'!
 Object subclass: #DistanceUnit
 	instanceVariableNames: 'conversionFactor symbol unitSymbol'
 	classVariableNames: ''
 	poolDictionaries: ''
-	category: 'Distance-Exercise'!
+	category: 'Distance-Solution'!
 
 !DistanceUnit methodsFor: 'as yet unclassified' stamp: 'masch 5/23/2017 20:55:31'!
 conversionFactor
@@ -257,7 +257,7 @@ unitSymbol: aString
 
 "-- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- "!
 
-!classDefinition: 'DistanceUnit class' category: #'Distance-Exercise'!
+!classDefinition: 'DistanceUnit class' category: #'Distance-Solution'!
 DistanceUnit class
 	instanceVariableNames: ''!
 
