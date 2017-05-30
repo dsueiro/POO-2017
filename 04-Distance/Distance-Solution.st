@@ -82,6 +82,34 @@ test13UnMetroToDiezKilometrosDeACinfoCentimetrosEsIntervalo
 	self assert: intervalo size equals: 199981.
 	! !
 
+!DistanceTest methodsFor: 'as yet unclassified' stamp: 'DHS 5/30/2017 08:05:50'!
+test14
+	|factory|
+	factory := DistanceFactory new.
+	self assert: factory oneMeter equals: unMetro.
+	! !
+
+!DistanceTest methodsFor: 'as yet unclassified' stamp: 'DHS 5/30/2017 08:10:56'!
+test15
+	|factory|
+	factory := DistanceFactory new.
+	self assert: factory twoMeters equals: unMetro * 2.
+	! !
+
+!DistanceTest methodsFor: 'as yet unclassified' stamp: 'DHS 5/30/2017 08:22:28'!
+test16
+	|factory|
+	factory := DistanceFactory new.
+	self assert: factory oneHundredCentimeters equals: cienCentimetros. 
+	! !
+
+!DistanceTest methodsFor: 'as yet unclassified' stamp: 'DHS 5/30/2017 08:22:43'!
+test17
+	|factory|
+	factory := DistanceFactory new.
+	self assert: factory twoHundredCentimeters equals: cienCentimetros * 2. 
+	! !
+
 
 !classDefinition: #Distance category: #'Distance-Solution'!
 Object subclass: #Distance
@@ -192,6 +220,55 @@ Distance class
 !Distance class methodsFor: 'initialization' stamp: 'masch 5/23/2017 19:31:29'!
 newWith: aMagnitude in: aUnit 
 	^self new measure: aMagnitude; unit: aUnit; yourself! !
+
+
+!classDefinition: #DistanceFactory category: #'Distance-Solution'!
+Object subclass: #DistanceFactory
+	instanceVariableNames: ''
+	classVariableNames: ''
+	poolDictionaries: ''
+	category: 'Distance-Solution'!
+
+!DistanceFactory methodsFor: 'as yet unclassified' stamp: 'DHS 5/30/2017 08:23:50'!
+centiMeter
+	^DistanceUnit newWithConversionFactor: 0.01 withSymbol: 'cm'.
+! !
+
+!DistanceFactory methodsFor: 'as yet unclassified' stamp: 'DHS 5/30/2017 08:12:00'!
+meter
+	^DistanceUnit newWithConversionFactor: 1 withSymbol: 'm'.
+! !
+
+!DistanceFactory methodsFor: 'as yet unclassified' stamp: 'DHS 5/30/2017 08:25:39'!
+minusOneMeters
+	^Distance newWith: -1 in: self meter.! !
+
+!DistanceFactory methodsFor: 'as yet unclassified' stamp: 'DHS 5/30/2017 08:25:15'!
+oneCentimeter
+	^Distance newWith: 1 in: self centiMeter.
+! !
+
+!DistanceFactory methodsFor: 'as yet unclassified' stamp: 'DHS 5/30/2017 08:24:29'!
+oneHundredCentimeters
+	^Distance newWith: 100 in: self centiMeter.
+! !
+
+!DistanceFactory methodsFor: 'as yet unclassified' stamp: 'DHS 5/30/2017 08:12:24'!
+oneMeter
+	^Distance newWith: 1 in: self meter.! !
+
+!DistanceFactory methodsFor: 'as yet unclassified' stamp: 'DHS 5/30/2017 08:24:13'!
+twoHundredCentimeters
+	^Distance newWith: 200 in: self centiMeter.
+! !
+
+!DistanceFactory methodsFor: 'as yet unclassified' stamp: 'DHS 5/30/2017 08:12:39'!
+twoMeters
+	^Distance newWith: 2 in: self meter.! !
+
+!DistanceFactory methodsFor: 'as yet unclassified' stamp: 'DHS 5/30/2017 08:13:50'!
+zeroMeters
+	^Distance newWith: 0 in: self meter.! !
 
 
 !classDefinition: #DistanceInterval category: #'Distance-Solution'!
