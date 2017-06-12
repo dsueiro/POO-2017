@@ -5,43 +5,63 @@ TestCase subclass: #TusLibrosTest
 	poolDictionaries: ''
 	category: 'TusLibros'!
 
-!TusLibrosTest methodsFor: 'as yet unclassified' stamp: 'DHS 6/10/2017 19:44:58'!
+!TusLibrosTest methodsFor: 'testing' stamp: 'DHS 6/10/2017 19:44:58'!
 test01ANewCartIsEmpty
 	| cart |
 	cart := Cart new.
 	
 	self assert: cart empty.! !
 
-!TusLibrosTest methodsFor: 'as yet unclassified' stamp: 'DHS 6/10/2017 19:48:23'!
+!TusLibrosTest methodsFor: 'testing' stamp: 'masch 6/11/2017 21:58:54'!
 test02AfterAddingABookACartIsNotEmpty
-	| cart book |
+	| cart cartItem book |
 	cart := Cart new.
 	
 	book := Book new.
 	
-	cart add: book.
+	cartItem := CartItem withBook: book withQuantity: 1.
+	
+	cart add: cartItem.
 	
 	self deny: cart empty.! !
 
-!TusLibrosTest methodsFor: 'as yet unclassified' stamp: 'DHS 6/10/2017 20:10:57'!
+!TusLibrosTest methodsFor: 'testing' stamp: 'masch 6/11/2017 22:00:10'!
 test03AfterAddingABookTheCartContainsIt
-	| cart book |
+	| cart cartItem book |
 	cart := Cart new.
 	
 	book := Book new.
 	
-	cart add: book.
+	cartItem := CartItem withBook: book withQuantity: 1.
 	
-	self assert: (cart includes: book).! !
+	cart add: cartItem.
+	
+	self assert: (cart includes: cartItem).! !
 
-!TusLibrosTest methodsFor: 'as yet unclassified' stamp: 'DHS 6/10/2017 20:10:38'!
+!TusLibrosTest methodsFor: 'testing' stamp: 'masch 6/11/2017 22:00:58'!
 test04BeforeAddingABookTheCartDoesNotContainsIt
+	| cart cartItem book |
+	cart := Cart new.
+	
+	book := Book new.
+	
+	cartItem := CartItem withBook: book withQuantity: 1.
+	
+	self deny: (cart includes: cartItem).! !
+
+!TusLibrosTest methodsFor: 'testing' stamp: 'masch 6/11/2017 22:26:48'!
+test05CannotAddABookWithQuantityLessThanOne
 	| cart book |
 	cart := Cart new.
 	
 	book := Book new.
 	
-	self deny: (cart includes: book).! !
+	self should: [cart add: (CartItem withBook: book withQuantity: 0)]
+	raise: Error - MessageNotUnderstood 
+	withExceptionDo: [ :anError |
+		self assert: anError messageText equals: 'Cannot add quantity less than one']
+	
+	! !
 
 
 !classDefinition: #Book category: #TusLibros!
@@ -68,11 +88,40 @@ initialize
 	content := Bag new! !
 
 
-!Cart methodsFor: 'adding' stamp: 'DHS 6/10/2017 19:57:40'!
-add: aBook 
-	content add: aBook! !
+!Cart methodsFor: 'adding' stamp: 'masch 6/11/2017 22:28:37'!
+add: aCartItem
+	content add: aCartItem! !
 
 
-!Cart methodsFor: 'evaluating' stamp: 'DHS 6/10/2017 20:08:00'!
-includes: aBook 
-	^content includes: aBook! !
+!Cart methodsFor: 'evaluating' stamp: 'masch 6/11/2017 22:28:20'!
+includes: aCartItem
+	^content includes: aCartItem! !
+
+
+!classDefinition: #CartItem category: #TusLibros!
+Object subclass: #CartItem
+	instanceVariableNames: 'book quantity'
+	classVariableNames: ''
+	poolDictionaries: ''
+	category: 'TusLibros'!
+
+!CartItem methodsFor: 'modifying' stamp: 'masch 6/11/2017 21:57:45'!
+book: aBook 
+	book := aBook! !
+
+!CartItem methodsFor: 'modifying' stamp: 'masch 6/11/2017 21:58:17'!
+quantity: aQuantity 
+	quantity := aQuantity! !
+
+"-- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- "!
+
+!classDefinition: 'CartItem class' category: #TusLibros!
+CartItem class
+	instanceVariableNames: ''!
+
+!CartItem class methodsFor: 'instance creation' stamp: 'masch 6/11/2017 22:32:59'!
+withBook: aBook withQuantity: aQuantity
+	
+	(aQuantity < 1) ifTrue: [self error: 'Cannot add quantity less than one'].
+	
+	^self new book: aBook; quantity: aQuantity; yourself! !
