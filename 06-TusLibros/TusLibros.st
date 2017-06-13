@@ -39,6 +39,15 @@ test05CannotAddABookWithQuantityLessThanOne
 	
 	! !
 
+!TusLibrosTest methodsFor: 'testing' stamp: 'DHS 6/13/2017 19:43:41'!
+test06CannotAddABookWithANonIntegerQuantity
+	self should: [emptyCart add: book1 withAmount: 1.1]
+	raise: Error - MessageNotUnderstood 
+	withExceptionDo: [ :anError |
+		self assert: anError messageText equals: 'Cannot add a non integer quantity']
+	
+	! !
+
 
 !classDefinition: #Book category: #TusLibros!
 Object subclass: #Book
@@ -97,11 +106,16 @@ isEmpty
 add: aCartItem
 	content add: aCartItem! !
 
-!Cart methodsFor: 'adding' stamp: 'PEP 6/13/2017 00:21:22'!
-add: aBook withAmount: aSmallInteger 
-	aSmallInteger strictlyPositive ifFalse: [self error: 'Cannot add quantity less than one'].
-	content add: aBook withOccurrences: aSmallInteger.
+!Cart methodsFor: 'adding' stamp: 'DHS 6/13/2017 19:52:48'!
+add: aBook withAmount: aQuantity 
+	self validateQuantity: aQuantity.
+	content add: aBook withOccurrences: aQuantity.
 	^aBook! !
+
+!Cart methodsFor: 'adding' stamp: 'DHS 6/13/2017 19:53:19'!
+validateQuantity: aQuantity.
+	aQuantity strictlyPositive ifFalse: [self error: 'Cannot add quantity less than one'].
+	aQuantity isInteger ifFalse: [self error: 'Cannot add a non integer quantity'].! !
 
 
 !Cart methodsFor: 'evaluating' stamp: 'PEP 6/13/2017 00:04:43'!
