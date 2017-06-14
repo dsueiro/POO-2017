@@ -1,54 +1,64 @@
 !classDefinition: #TusLibrosTest category: #TusLibros!
 TestCase subclass: #TusLibrosTest
-	instanceVariableNames: 'emptyCart book1 cartWithOneBook1'
+	instanceVariableNames: 'book1 cartWithOneBook1 emptyCatalog catalogWithOneBook emptyCartWithCatalogWithOneBook emptyCartWithEmptyCatalog'
 	classVariableNames: ''
 	poolDictionaries: ''
 	category: 'TusLibros'!
 
-!TusLibrosTest methodsFor: 'testing' stamp: 'DHS 6/13/2017 20:54:13'!
+!TusLibrosTest methodsFor: 'testing' stamp: 'masch 6/14/2017 07:31:16'!
 setUp
+	emptyCatalog := Set new.
+	emptyCartWithEmptyCatalog := Cart with: emptyCatalog.
 	
-	emptyCart := Cart new.
 	book1 := 'Un libro'. "Book withISIN: '1234' withTitle: 'book1' withAuthor: 'Jhon Doe'".
-	cartWithOneBook1 := Cart new add: book1.! !
 
-!TusLibrosTest methodsFor: 'testing' stamp: 'PEP 6/12/2017 22:58:03'!
+	catalogWithOneBook := Set new.
+	catalogWithOneBook add: book1.
+
+	emptyCartWithCatalogWithOneBook := Cart with: catalogWithOneBook.
+	
+	cartWithOneBook1 := Cart with: catalogWithOneBook.
+	cartWithOneBook1 add: book1.! !
+
+!TusLibrosTest methodsFor: 'testing' stamp: 'masch 6/14/2017 07:31:34'!
 test01ANewCartIsEmpty
-	self assert: emptyCart isEmpty.! !
+	self assert: emptyCartWithEmptyCatalog isEmpty.! !
 
-!TusLibrosTest methodsFor: 'testing' stamp: 'PEP 6/12/2017 23:14:02'!
+!TusLibrosTest methodsFor: 'testing' stamp: 'masch 6/14/2017 07:32:59'!
 test02AfterAddingABookACartIsNotEmpty
-	emptyCart add: book1.
-	self deny: emptyCart isEmpty.! !
+	emptyCartWithCatalogWithOneBook add: book1.
+	self deny: emptyCartWithCatalogWithOneBook isEmpty.! !
 
-!TusLibrosTest methodsFor: 'testing' stamp: 'PEP 6/12/2017 23:37:06'!
+!TusLibrosTest methodsFor: 'testing' stamp: 'masch 6/14/2017 07:33:35'!
 test03AfterAddingABookTheCartContainsOneBook1
 	self assert: (cartWithOneBook1 includes: book1).
 	self assert: (cartWithOneBook1 quantityOf: book1) equals: 1! !
 
-!TusLibrosTest methodsFor: 'testing' stamp: 'PEP 6/12/2017 23:18:25'!
+!TusLibrosTest methodsFor: 'testing' stamp: 'masch 6/14/2017 07:33:57'!
 test04BeforeAddingABookTheCartDoesNotContainsIt
-	self deny: (emptyCart includes: book1).! !
+	self deny: (emptyCartWithEmptyCatalog includes: book1).! !
 
-!TusLibrosTest methodsFor: 'testing' stamp: 'PEP 6/13/2017 00:16:14'!
+!TusLibrosTest methodsFor: 'testing' stamp: 'masch 6/14/2017 07:34:32'!
 test05CannotAddABookWithQuantityLessThanOne
-	self should: [emptyCart add: book1 withAmount: 0]
+	self should: [emptyCartWithCatalogWithOneBook add: book1 withAmount: 0]
 	raise: Error - MessageNotUnderstood 
 	withExceptionDo: [ :anError |
-		self assert: anError messageText equals: 'Cannot add quantity less than one']
+		self assert: anError messageText equals: 'Cannot add quantity less than one'.
+		self assert: emptyCartWithCatalogWithOneBook isEmpty]
 	
 	! !
 
-!TusLibrosTest methodsFor: 'testing' stamp: 'DHS 6/13/2017 19:43:41'!
+!TusLibrosTest methodsFor: 'testing' stamp: 'masch 6/14/2017 07:34:47'!
 test06CannotAddABookWithANonIntegerQuantity
-	self should: [emptyCart add: book1 withAmount: 1.1]
+	self should: [emptyCartWithCatalogWithOneBook add: book1 withAmount: 1.1]
 	raise: Error - MessageNotUnderstood 
 	withExceptionDo: [ :anError |
-		self assert: anError messageText equals: 'Cannot add a non integer quantity']
+		self assert: anError messageText equals: 'Cannot add a non integer quantity'.
+		self assert: emptyCartWithCatalogWithOneBook isEmpty]
 	
 	! !
 
-!TusLibrosTest methodsFor: 'testing' stamp: 'DHS 6/13/2017 21:05:10'!
+!TusLibrosTest methodsFor: 'testing' stamp: 'masch 6/14/2017 07:03:19'!
 test07CannotAddABookThatIsNotFromTheCatalog
 	|catalog cart| 
 	catalog := Set new. 
@@ -56,7 +66,8 @@ test07CannotAddABookThatIsNotFromTheCatalog
 	self should: [cart add: book1]
 	raise: Error - MessageNotUnderstood 
 	withExceptionDo: [ :anError |
-		self assert: anError messageText equals: 'Cannot add a book outside the catalog']
+		self assert: anError messageText equals: 'Cannot add a book outside the catalog'.
+		self assert: cart isEmpty]
 	
 	! !
 
@@ -100,7 +111,7 @@ withISIN: anISIN withTitle: aBookTitle withAuthor: aBookAuthor
 
 !classDefinition: #Cart category: #TusLibros!
 Object subclass: #Cart
-	instanceVariableNames: 'content'
+	instanceVariableNames: 'content catalog'
 	classVariableNames: ''
 	poolDictionaries: ''
 	category: 'TusLibros'!
@@ -118,27 +129,36 @@ isEmpty
 add: aCartItem
 	self add: aCartItem withAmount: 1! !
 
-!Cart methodsFor: 'adding' stamp: 'DHS 6/13/2017 19:52:48'!
+!Cart methodsFor: 'adding' stamp: 'masch 6/14/2017 07:10:45'!
 add: aBook withAmount: aQuantity 
 	self validateQuantity: aQuantity.
+	self validateCatalog: aBook.
 	content add: aBook withOccurrences: aQuantity.
 	^aBook! !
-
-!Cart methodsFor: 'adding' stamp: 'DHS 6/13/2017 19:53:19'!
-validateQuantity: aQuantity.
-	aQuantity strictlyPositive ifFalse: [self error: 'Cannot add quantity less than one'].
-	aQuantity isInteger ifFalse: [self error: 'Cannot add a non integer quantity'].! !
 
 
 !Cart methodsFor: 'evaluating' stamp: 'PEP 6/13/2017 00:04:43'!
 includes: aBook
 	^content includes: aBook! !
 
-
-!Cart methodsFor: 'as yet unclassified' stamp: 'PEP 6/13/2017 00:03:58'!
+!Cart methodsFor: 'evaluating' stamp: 'masch 6/14/2017 07:09:56'!
 quantityOf: aBook 
-	^content occurrencesOf: aBook
-	! !
+	^content occurrencesOf: aBook! !
+
+
+!Cart methodsFor: 'initializing' stamp: 'masch 6/14/2017 07:02:27'!
+catalog: aCatalog
+	catalog := aCatalog.! !
+
+
+!Cart methodsFor: 'validating' stamp: 'masch 6/14/2017 07:11:37'!
+validateCatalog: aBook
+	(catalog includes: aBook) ifFalse: [self error: 'Cannot add a book outside the catalog'].! !
+
+!Cart methodsFor: 'validating' stamp: 'masch 6/14/2017 07:08:42'!
+validateQuantity: aQuantity.
+	aQuantity strictlyPositive ifFalse: [self error: 'Cannot add quantity less than one'].
+	aQuantity isInteger ifFalse: [self error: 'Cannot add a non integer quantity'].! !
 
 "-- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- "!
 
@@ -146,6 +166,6 @@ quantityOf: aBook
 Cart class
 	instanceVariableNames: ''!
 
-!Cart class methodsFor: 'as yet unclassified' stamp: 'DHS 6/13/2017 21:08:06'!
+!Cart class methodsFor: 'as yet unclassified' stamp: 'masch 6/14/2017 07:17:20'!
 with: aCatalog
-	^self new.! !
+	^self new catalog: aCatalog; yourself ! !
