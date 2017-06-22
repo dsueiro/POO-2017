@@ -1,11 +1,11 @@
 !classDefinition: #TusLibrosTest category: #TusLibros!
 TestCase subclass: #TusLibrosTest
-	instanceVariableNames: 'book1 cartWithOneBook1 emptyCatalog catalogWithOneBook emptyCartWithCatalogWithOneBook emptyCartWithEmptyCatalog'
+	instanceVariableNames: 'book1 cartWithOneBook1 emptyCatalog catalogWithOneBook emptyCartWithCatalogWithOneBook emptyCartWithEmptyCatalog priceListWithThreeItems cartWithMultipleOneBooks'
 	classVariableNames: ''
 	poolDictionaries: ''
 	category: 'TusLibros'!
 
-!TusLibrosTest methodsFor: 'testing' stamp: 'masch 6/14/2017 07:31:16'!
+!TusLibrosTest methodsFor: 'testing' stamp: 'masch 6/21/2017 07:10:51'!
 setUp
 	emptyCatalog := Set new.
 	emptyCartWithEmptyCatalog := Cart with: emptyCatalog.
@@ -18,7 +18,17 @@ setUp
 	emptyCartWithCatalogWithOneBook := Cart with: catalogWithOneBook.
 	
 	cartWithOneBook1 := Cart with: catalogWithOneBook.
-	cartWithOneBook1 add: book1.! !
+	cartWithOneBook1 add: book1.
+	
+	priceListWithThreeItems := Dictionary new.
+	priceListWithThreeItems add: (Association key: 'Un libro' value: 1.1).
+	priceListWithThreeItems add: (Association key: 'Dos libro' value: 2.2).
+	priceListWithThreeItems add: (Association key: 'Tres libro' value: 2.3).
+	
+	cartWithMultipleOneBooks := Cart with: catalogWithOneBook.
+	cartWithMultipleOneBooks add: book1 withAmount: 5.
+
+! !
 
 !TusLibrosTest methodsFor: 'testing' stamp: 'masch 6/14/2017 07:31:34'!
 test01ANewCartIsEmpty
@@ -58,18 +68,54 @@ test06CannotAddABookWithANonIntegerQuantity
 	
 	! !
 
-!TusLibrosTest methodsFor: 'testing' stamp: 'masch 6/14/2017 07:03:19'!
+!TusLibrosTest methodsFor: 'testing' stamp: 'masch 6/21/2017 06:35:16'!
 test07CannotAddABookThatIsNotFromTheCatalog
-	|catalog cart| 
-	catalog := Set new. 
-	cart := Cart with: catalog.
-	self should: [cart add: book1]
+	self should: [emptyCartWithEmptyCatalog add: book1]
 	raise: Error - MessageNotUnderstood 
 	withExceptionDo: [ :anError |
 		self assert: anError messageText equals: 'Cannot add a book outside the catalog'.
-		self assert: cart isEmpty]
+		self assert: emptyCartWithEmptyCatalog isEmpty]
 	
 	! !
+
+!TusLibrosTest methodsFor: 'testing' stamp: 'masch 6/21/2017 06:33:22'!
+test08ACashierCannotDoCheckouWithAnEmptyCart
+	|cashier| 
+	
+	cashier := Cashier with: priceListWithThreeItems.
+	
+	self should: [cashier checkout: emptyCartWithCatalogWithOneBook]
+	raise: Error - MessageNotUnderstood 
+	withExceptionDo: [ :anError |
+		self assert: anError messageText equals: 'Cannot do a checkout with an empty cart'.
+		self todo: 'Add ventas object']
+	
+	! !
+
+!TusLibrosTest methodsFor: 'testing' stamp: 'masch 6/21/2017 07:18:06'!
+test09ACashierDoCheckouWithAnCartWithOneBook
+	|cashier| 
+	
+	cashier := Cashier with: priceListWithThreeItems.
+	
+	self assert: 1.1 equals: (cashier checkout: cartWithOneBook1).
+	self todo: 'Add ventas object'
+	! !
+
+!TusLibrosTest methodsFor: 'testing' stamp: 'masch 6/21/2017 07:18:11'!
+test10ACashierDoCheckoutWithACartWithMultipleBooks
+	|cashier| 
+	
+	cashier := Cashier with: priceListWithThreeItems.
+	
+	self assert: 1.1 equals: (cashier checkout: cartWithMultipleOneBooks).
+	self todo: 'Add ventas object'.
+	! !
+
+
+!TusLibrosTest methodsFor: 'as yet unclassified' stamp: 'masch 6/21/2017 06:31:01'!
+todo: aString 
+! !
 
 
 !classDefinition: #Book category: #TusLibros!
@@ -160,12 +206,51 @@ validateQuantity: aQuantity.
 	aQuantity strictlyPositive ifFalse: [self error: 'Cannot add quantity less than one'].
 	aQuantity isInteger ifFalse: [self error: 'Cannot add a non integer quantity'].! !
 
+
+!Cart methodsFor: 'accessing' stamp: 'masch 6/21/2017 07:01:11'!
+content
+	^content! !
+
 "-- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- "!
 
 !classDefinition: 'Cart class' category: #TusLibros!
 Cart class
 	instanceVariableNames: ''!
 
-!Cart class methodsFor: 'as yet unclassified' stamp: 'masch 6/14/2017 07:17:20'!
+!Cart class methodsFor: 'instance creation' stamp: 'masch 6/21/2017 06:03:56'!
 with: aCatalog
 	^self new catalog: aCatalog; yourself ! !
+
+
+!classDefinition: #Cashier category: #TusLibros!
+Object subclass: #Cashier
+	instanceVariableNames: 'priceList'
+	classVariableNames: ''
+	poolDictionaries: ''
+	category: 'TusLibros'!
+
+!Cashier methodsFor: 'as yet unclassified' stamp: 'masch 6/21/2017 07:02:05'!
+checkout: aCart 
+	|content totalPrice|
+	(aCart isEmpty) ifTrue: [self error: 'Cannot do a checkout with an empty cart'].
+	
+	totalPrice := 0.
+	content := aCart content.
+	content do: [ :contentItem |
+		totalPrice := totalPrice + priceList at: contentItem].
+	
+	^totalPrice.! !
+
+!Cashier methodsFor: 'as yet unclassified' stamp: 'masch 6/21/2017 06:24:57'!
+priceList: aPriceList
+	priceList := aPriceList ! !
+
+"-- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- "!
+
+!classDefinition: 'Cashier class' category: #TusLibros!
+Cashier class
+	instanceVariableNames: ''!
+
+!Cashier class methodsFor: 'instance creation' stamp: 'masch 6/21/2017 06:03:11'!
+with: aPriceList
+	^ self new priceList: aPriceList; yourself! !
