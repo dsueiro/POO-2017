@@ -1,19 +1,24 @@
 !classDefinition: #TusLibrosTest category: #TusLibros!
 TestCase subclass: #TusLibrosTest
-	instanceVariableNames: 'book1 cartWithOneBook1 emptyCatalog catalogWithOneBook emptyCartWithCatalogWithOneBook emptyCartWithEmptyCatalog priceListWithThreeItems cartWithMultipleOneBooks'
+	instanceVariableNames: 'book1 cartWithOneBook1 emptyCatalog catalogWithOneBook emptyCartWithCatalogWithOneBook emptyCartWithEmptyCatalog priceListWithThreeItems cartWithFiveOneBooks book2 catalogWithMultipleBooks cartWithMultipleBooks'
 	classVariableNames: ''
 	poolDictionaries: ''
 	category: 'TusLibros'!
 
-!TusLibrosTest methodsFor: 'testing' stamp: 'masch 6/21/2017 07:10:51'!
+!TusLibrosTest methodsFor: 'testing' stamp: 'masch 6/24/2017 09:05:07'!
 setUp
 	emptyCatalog := Set new.
 	emptyCartWithEmptyCatalog := Cart with: emptyCatalog.
 	
 	book1 := 'Un libro'. "Book withISIN: '1234' withTitle: 'book1' withAuthor: 'Jhon Doe'".
+	book2 := 'Dos libro'. "Book withISIN: '1234' withTitle: 'book1' withAuthor: 'Jhon Doe'".
 
 	catalogWithOneBook := Set new.
 	catalogWithOneBook add: book1.
+
+	catalogWithMultipleBooks := Set new.
+	catalogWithMultipleBooks add: book1.
+	catalogWithMultipleBooks add: book2.
 
 	emptyCartWithCatalogWithOneBook := Cart with: catalogWithOneBook.
 	
@@ -21,13 +26,16 @@ setUp
 	cartWithOneBook1 add: book1.
 	
 	priceListWithThreeItems := Dictionary new.
-	priceListWithThreeItems add: (Association key: 'Un libro' value: 1.1).
-	priceListWithThreeItems add: (Association key: 'Dos libro' value: 2.2).
-	priceListWithThreeItems add: (Association key: 'Tres libro' value: 2.3).
+	priceListWithThreeItems add: (Association key: 'Un libro' value: 1).
+	priceListWithThreeItems add: (Association key: 'Dos libro' value: 2).
+	priceListWithThreeItems add: (Association key: 'Tres libro' value: 3).
 	
-	cartWithMultipleOneBooks := Cart with: catalogWithOneBook.
-	cartWithMultipleOneBooks add: book1 withAmount: 5.
-
+	cartWithFiveOneBooks := Cart with: catalogWithOneBook.
+	cartWithFiveOneBooks add: book1 withAmount: 5.
+	
+	cartWithMultipleBooks := Cart with: catalogWithMultipleBooks.
+	cartWithMultipleBooks add: book1 withAmount: 3.
+	cartWithMultipleBooks add: book2 withAmount: 4.
 ! !
 
 !TusLibrosTest methodsFor: 'testing' stamp: 'masch 6/14/2017 07:31:34'!
@@ -92,23 +100,23 @@ test08ACashierCannotDoCheckouWithAnEmptyCart
 	
 	! !
 
-!TusLibrosTest methodsFor: 'testing' stamp: 'masch 6/21/2017 07:18:06'!
-test09ACashierDoCheckouWithAnCartWithOneBook
+!TusLibrosTest methodsFor: 'testing' stamp: 'masch 6/24/2017 09:05:34'!
+test09ACashierDoCheckouWithAnCartWithFiveOneBook
 	|cashier| 
 	
 	cashier := Cashier with: priceListWithThreeItems.
 	
-	self assert: 1.1 equals: (cashier checkout: cartWithOneBook1).
+	self assert: 5 equals: (cashier checkout: cartWithFiveOneBooks).
 	self todo: 'Add ventas object'
 	! !
 
-!TusLibrosTest methodsFor: 'testing' stamp: 'masch 6/21/2017 07:18:11'!
+!TusLibrosTest methodsFor: 'testing' stamp: 'masch 6/24/2017 09:05:18'!
 test10ACashierDoCheckoutWithACartWithMultipleBooks
 	|cashier| 
 	
 	cashier := Cashier with: priceListWithThreeItems.
 	
-	self assert: 1.1 equals: (cashier checkout: cartWithMultipleOneBooks).
+	self assert: 11 equals: (cashier checkout: cartWithMultipleBooks).
 	self todo: 'Add ventas object'.
 	! !
 
@@ -211,6 +219,16 @@ validateQuantity: aQuantity.
 content
 	^content! !
 
+!Cart methodsFor: 'accessing' stamp: 'masch 6/24/2017 09:06:50'!
+totalPrice: aPricesList 
+	|totalPrice|
+		
+	totalPrice := 0.
+	content asSet do: [ :contentItem |
+		totalPrice := totalPrice + ((aPricesList at: contentItem) * (content occurrencesOf: contentItem))].
+	
+	^totalPrice.! !
+
 "-- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- "!
 
 !classDefinition: 'Cart class' category: #TusLibros!
@@ -229,17 +247,11 @@ Object subclass: #Cashier
 	poolDictionaries: ''
 	category: 'TusLibros'!
 
-!Cashier methodsFor: 'as yet unclassified' stamp: 'masch 6/21/2017 07:02:05'!
+!Cashier methodsFor: 'as yet unclassified' stamp: 'masch 6/22/2017 06:33:37'!
 checkout: aCart 
-	|content totalPrice|
 	(aCart isEmpty) ifTrue: [self error: 'Cannot do a checkout with an empty cart'].
 	
-	totalPrice := 0.
-	content := aCart content.
-	content do: [ :contentItem |
-		totalPrice := totalPrice + priceList at: contentItem].
-	
-	^totalPrice.! !
+	^aCart totalPrice: priceList! !
 
 !Cashier methodsFor: 'as yet unclassified' stamp: 'masch 6/21/2017 06:24:57'!
 priceList: aPriceList
