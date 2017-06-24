@@ -1,19 +1,26 @@
 !classDefinition: #TusLibrosTest category: #TusLibros!
 TestCase subclass: #TusLibrosTest
-	instanceVariableNames: 'book1 cartWithOneBook1 emptyCatalog catalogWithOneBook emptyCartWithCatalogWithOneBook emptyCartWithEmptyCatalog priceListWithThreeItems cartWithMultipleOneBooks'
+	instanceVariableNames: 'book1 cartWithOneBook1 emptyCatalog catalogWithOneBook emptyCartWithCatalogWithOneBook emptyCartWithEmptyCatalog priceListWithThreeItems cartWithFiveOneBooks book2 catalogWithMultipleBooks cartWithMultipleBooks creditCardExpiredOn052012 salesBook'
 	classVariableNames: ''
 	poolDictionaries: ''
 	category: 'TusLibros'!
 
-!TusLibrosTest methodsFor: 'testing' stamp: 'masch 6/21/2017 07:10:51'!
+!TusLibrosTest methodsFor: 'testing' stamp: 'masch 6/24/2017 18:58:49'!
 setUp
+	salesBook _ SalesBook new.
+	
 	emptyCatalog := Set new.
 	emptyCartWithEmptyCatalog := Cart with: emptyCatalog.
 	
 	book1 := 'Un libro'. "Book withISIN: '1234' withTitle: 'book1' withAuthor: 'Jhon Doe'".
+	book2 := 'Dos libro'. "Book withISIN: '1234' withTitle: 'book1' withAuthor: 'Jhon Doe'".
 
 	catalogWithOneBook := Set new.
 	catalogWithOneBook add: book1.
+
+	catalogWithMultipleBooks := Set new.
+	catalogWithMultipleBooks add: book1.
+	catalogWithMultipleBooks add: book2.
 
 	emptyCartWithCatalogWithOneBook := Cart with: catalogWithOneBook.
 	
@@ -21,12 +28,18 @@ setUp
 	cartWithOneBook1 add: book1.
 	
 	priceListWithThreeItems := Dictionary new.
-	priceListWithThreeItems add: (Association key: 'Un libro' value: 1.1).
-	priceListWithThreeItems add: (Association key: 'Dos libro' value: 2.2).
-	priceListWithThreeItems add: (Association key: 'Tres libro' value: 2.3).
+	priceListWithThreeItems add: (Association key: 'Un libro' value: 1).
+	priceListWithThreeItems add: (Association key: 'Dos libro' value: 2).
+	priceListWithThreeItems add: (Association key: 'Tres libro' value: 3).
 	
-	cartWithMultipleOneBooks := Cart with: catalogWithOneBook.
-	cartWithMultipleOneBooks add: book1 withAmount: 5.
+	cartWithFiveOneBooks := Cart with: catalogWithOneBook.
+	cartWithFiveOneBooks add: book1 withAmount: 5.
+	
+	cartWithMultipleBooks := Cart with: catalogWithMultipleBooks.
+	cartWithMultipleBooks add: book1 withAmount: 3.
+	cartWithMultipleBooks add: book2 withAmount: 4.
+
+	creditCardExpiredOn052012 := CreditCard withName: 'Juan Perez' withNumber: 1000000000000000 withExpirationDate: (Date newDay: 01 month: 05 year: 2012).
 
 ! !
 
@@ -78,44 +91,88 @@ test07CannotAddABookThatIsNotFromTheCatalog
 	
 	! !
 
-!TusLibrosTest methodsFor: 'testing' stamp: 'masch 6/21/2017 06:33:22'!
-test08ACashierCannotDoCheckouWithAnEmptyCart
-	|cashier| 
-	
-	cashier := Cashier with: priceListWithThreeItems.
-	
-	self should: [cashier checkout: emptyCartWithCatalogWithOneBook]
+!TusLibrosTest methodsFor: 'testing' stamp: 'masch 6/24/2017 18:59:04'!
+test08CannotCreateACashierWithAnEmptyCart	
+	self should: [Cashier withPriceList: priceListWithThreeItems 
+		                             withCart: emptyCartWithCatalogWithOneBook 
+		                             withCreditCard: creditCardExpiredOn052012 
+		                             withPaymentDay: (Date newDay: 1  month: 4 year: 2012)
+		                             withSalesBook: salesBook]
 	raise: Error - MessageNotUnderstood 
 	withExceptionDo: [ :anError |
-		self assert: anError messageText equals: 'Cannot do a checkout with an empty cart'.
-		self todo: 'Add ventas object']
+		self assert: anError messageText equals: 'Cannot create a cashier with an empty cart']
 	
 	! !
 
-!TusLibrosTest methodsFor: 'testing' stamp: 'masch 6/21/2017 07:18:06'!
-test09ACashierDoCheckouWithAnCartWithOneBook
+!TusLibrosTest methodsFor: 'testing' stamp: 'masch 6/24/2017 19:08:29'!
+test09ACashierDoCheckouWithAnCartWithFiveOneBook
 	|cashier| 
 	
-	cashier := Cashier with: priceListWithThreeItems.
+	cashier := Cashier withPriceList: priceListWithThreeItems 
+	                              withCart: cartWithFiveOneBooks 
+	                              withCreditCard: creditCardExpiredOn052012 
+	                              withPaymentDay: (Date newDay: 1  month: 4 year: 2012)
+	                              withSalesBook: salesBook.
 	
-	self assert: 1.1 equals: (cashier checkout: cartWithOneBook1).
-	self todo: 'Add ventas object'
+	self assert: 5 equals: (cashier checkout).
+	self deny: cashier salesBook isEmpty.
 	! !
 
-!TusLibrosTest methodsFor: 'testing' stamp: 'masch 6/21/2017 07:18:11'!
+!TusLibrosTest methodsFor: 'testing' stamp: 'masch 6/24/2017 19:10:29'!
 test10ACashierDoCheckoutWithACartWithMultipleBooks
 	|cashier| 
 	
-	cashier := Cashier with: priceListWithThreeItems.
+	cashier := Cashier withPriceList: priceListWithThreeItems 
+	                              withCart: cartWithMultipleBooks 
+	                              withCreditCard:  creditCardExpiredOn052012 
+	                              withPaymentDay: (Date newDay: 1  month: 4 year: 2012)
+	                              withSalesBook: salesBook.
 	
-	self assert: 1.1 equals: (cashier checkout: cartWithMultipleOneBooks).
-	self todo: 'Add ventas object'.
+	self assert: 11 equals: (cashier checkout).
+	self deny: cashier salesBook isEmpty.	! !
+
+!TusLibrosTest methodsFor: 'testing' stamp: 'masch 6/24/2017 19:13:22'!
+test11CannotCreateACreditCardWithAnEmptyName
+	self should: [CreditCard withName: '' 
+		                                   withNumber: 12345 
+		                                   withExpirationDate: (Date newDay: 01 month: 05 year: 2012)]
+	raise: Error - MessageNotUnderstood 
+	withExceptionDo: [:anError | 
+		self assert: anError messageText equals: 'Name cannot be empty'].! !
+
+!TusLibrosTest methodsFor: 'testing' stamp: 'masch 6/24/2017 19:13:42'!
+test12CannotCreateACreditCardWithAPositiveNumberLessThanSixteenLength
+	self should: [CreditCard withName: 'Juan Perez' 
+		                                   withNumber: 999999999999999 
+		                                   withExpirationDate: (Date newDay: 01 month: 05 year: 2012)]
+	raise: Error - MessageNotUnderstood 
+	withExceptionDo: [:anError | 
+		self assert: anError messageText equals: 'Number must have at least 16 numbers'].! !
+
+!TusLibrosTest methodsFor: 'testing' stamp: 'masch 6/24/2017 19:14:06'!
+test13ACreditCardWithAnExpirationDateLessThanADayIsExpired
+	|creditCard|
+	
+	creditCard := CreditCard withName: 'Juan Perez' 
+	                                         withNumber: 1000000000000000 
+	                                         withExpirationDate: (Date newDay: 01 month: 05 year: 2012).
+	
+	self assert: (creditCard isExpiredOn: (Date newDay: 12 month: 5 year: 2012)).	
+	self assert: (creditCard isExpiredOn: (Date newDay: 12 month: 8 year: 2012)).
+	self assert: (creditCard isExpiredOn: (Date newDay: 1 month: 1 year: 2017)).! !
+
+!TusLibrosTest methodsFor: 'testing' stamp: 'masch 6/24/2017 19:12:04'!
+test14CannotCreateACashierWithACreditcardExpired
+	self should: [Cashier withPriceList: priceListWithThreeItems 
+		                             withCart: cartWithFiveOneBooks 
+		                             withCreditCard: creditCardExpiredOn052012 
+		                             withPaymentDay: (Date newDay: 1  month: 12 year: 2012) 
+		                             withSalesBook: salesBook]
+	raise: Error - MessageNotUnderstood 
+	withExceptionDo: [ :anError |
+		self assert: anError messageText equals: 'The expiration date card is expired'.]
+	
 	! !
-
-
-!TusLibrosTest methodsFor: 'as yet unclassified' stamp: 'masch 6/21/2017 06:31:01'!
-todo: aString 
-! !
 
 
 !classDefinition: #Book category: #TusLibros!
@@ -211,6 +268,16 @@ validateQuantity: aQuantity.
 content
 	^content! !
 
+!Cart methodsFor: 'accessing' stamp: 'masch 6/24/2017 09:06:50'!
+totalPrice: aPricesList 
+	|totalPrice|
+		
+	totalPrice := 0.
+	content asSet do: [ :contentItem |
+		totalPrice := totalPrice + ((aPricesList at: contentItem) * (content occurrencesOf: contentItem))].
+	
+	^totalPrice.! !
+
 "-- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- "!
 
 !classDefinition: 'Cart class' category: #TusLibros!
@@ -224,26 +291,35 @@ with: aCatalog
 
 !classDefinition: #Cashier category: #TusLibros!
 Object subclass: #Cashier
-	instanceVariableNames: 'priceList'
+	instanceVariableNames: 'priceList cart salesBook'
 	classVariableNames: ''
 	poolDictionaries: ''
 	category: 'TusLibros'!
 
-!Cashier methodsFor: 'as yet unclassified' stamp: 'masch 6/21/2017 07:02:05'!
-checkout: aCart 
-	|content totalPrice|
-	(aCart isEmpty) ifTrue: [self error: 'Cannot do a checkout with an empty cart'].
+!Cashier methodsFor: 'as yet unclassified' stamp: 'masch 6/24/2017 18:18:28'!
+cart: aCart 
+	cart := aCart ! !
+
+!Cashier methodsFor: 'as yet unclassified' stamp: 'masch 6/24/2017 19:03:31'!
+checkout
+	|salePrice|
+	salePrice := cart totalPrice: priceList.
+	salesBook addSale: salePrice.
+	^salePrice
 	
-	totalPrice := 0.
-	content := aCart content.
-	content do: [ :contentItem |
-		totalPrice := totalPrice + priceList at: contentItem].
-	
-	^totalPrice.! !
+	! !
 
 !Cashier methodsFor: 'as yet unclassified' stamp: 'masch 6/21/2017 06:24:57'!
 priceList: aPriceList
 	priceList := aPriceList ! !
+
+!Cashier methodsFor: 'as yet unclassified' stamp: 'masch 6/24/2017 19:08:58'!
+salesBook
+	^salesBook.! !
+
+!Cashier methodsFor: 'as yet unclassified' stamp: 'masch 6/24/2017 19:05:25'!
+salesBook: aSalesBook
+	salesBook := aSalesBook! !
 
 "-- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- "!
 
@@ -251,6 +327,84 @@ priceList: aPriceList
 Cashier class
 	instanceVariableNames: ''!
 
-!Cashier class methodsFor: 'instance creation' stamp: 'masch 6/21/2017 06:03:11'!
-with: aPriceList
-	^ self new priceList: aPriceList; yourself! !
+!Cashier class methodsFor: 'instance creation' stamp: 'masch 6/24/2017 18:57:10'!
+withPriceList: aPriceList withCart: aCart withCreditCard: aCreditCard withPaymentDay: aPaymentDay withSalesBook: aSalesBook
+
+	self validateCart: aCart.
+	self validateCardOn: aCreditCard withPaymentDay: aPaymentDay.
+
+	^ self new priceList: aPriceList; cart: aCart; salesBook: aSalesBook; yourself! !
+
+
+!Cashier class methodsFor: 'as yet unclassified' stamp: 'masch 6/24/2017 18:15:38'!
+validateCardOn: aCreditCard withPaymentDay: aPaymentDay 
+	(aCreditCard isExpiredOn: aPaymentDay) ifTrue: [self error: 'The expiration date card is expired'].! !
+
+!Cashier class methodsFor: 'as yet unclassified' stamp: 'masch 6/24/2017 18:25:48'!
+validateCart: aCart 
+	(aCart isEmpty) ifTrue: [self error: 'Cannot create a cashier with an empty cart'].! !
+
+
+!classDefinition: #CreditCard category: #TusLibros!
+Object subclass: #CreditCard
+	instanceVariableNames: 'name number expirationDate'
+	classVariableNames: ''
+	poolDictionaries: ''
+	category: 'TusLibros'!
+
+!CreditCard methodsFor: 'as yet unclassified' stamp: 'masch 6/24/2017 15:36:47'!
+expirationDate: anExpirationDate 
+	expirationDate := anExpirationDate! !
+
+!CreditCard methodsFor: 'as yet unclassified' stamp: 'masch 6/24/2017 17:51:27'!
+isExpiredOn: aDateFrom 
+	^expirationDate < aDateFrom! !
+
+!CreditCard methodsFor: 'as yet unclassified' stamp: 'masch 6/24/2017 15:28:40'!
+name: aName 
+	name := aName ! !
+
+!CreditCard methodsFor: 'as yet unclassified' stamp: 'masch 6/24/2017 15:32:29'!
+number: aNumber 
+	number := aNumber! !
+
+"-- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- "!
+
+!classDefinition: 'CreditCard class' category: #TusLibros!
+CreditCard class
+	instanceVariableNames: ''!
+
+!CreditCard class methodsFor: 'as yet unclassified' stamp: 'masch 6/24/2017 16:20:16'!
+validateName: aName
+	(aName isEmpty) ifTrue: [ self error: 'Name cannot be empty'].! !
+
+!CreditCard class methodsFor: 'as yet unclassified' stamp: 'masch 6/24/2017 16:29:24'!
+validateNumber: aNumber 
+	(aNumber < 1000000000000000) ifTrue: [self error: 'Number must have at least 16 numbers'].! !
+
+!CreditCard class methodsFor: 'as yet unclassified' stamp: 'masch 6/24/2017 16:25:13'!
+withName: aName withNumber: aNumber withExpirationDate: aExpirationDate
+	self validateName: aName.
+	self validateNumber: aNumber.
+	
+	^self new name: aName; number: aNumber; expirationDate: aExpirationDate; yourself! !
+
+
+!classDefinition: #SalesBook category: #TusLibros!
+Object subclass: #SalesBook
+	instanceVariableNames: 'salesCollectionBook'
+	classVariableNames: ''
+	poolDictionaries: ''
+	category: 'TusLibros'!
+
+!SalesBook methodsFor: 'as yet unclassified' stamp: 'masch 6/24/2017 19:00:15'!
+addSale: aSalePrice
+	^salesCollectionBook add: aSalePrice! !
+
+!SalesBook methodsFor: 'as yet unclassified' stamp: 'masch 6/24/2017 18:54:16'!
+initialize
+	salesCollectionBook _ OrderedCollection new.! !
+
+!SalesBook methodsFor: 'as yet unclassified' stamp: 'masch 6/24/2017 18:51:25'!
+isEmpty
+	^salesCollectionBook isEmpty.! !
