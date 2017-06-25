@@ -1,11 +1,11 @@
 !classDefinition: #TusLibrosTest category: #TusLibros!
 TestCase subclass: #TusLibrosTest
-	instanceVariableNames: 'book1 cartWithOneBook1 emptyCatalog catalogWithOneBook emptyCartWithCatalogWithOneBook emptyCartWithEmptyCatalog priceListWithThreeItems cartWithFiveOneBooks book2 catalogWithMultipleBooks cartWithMultipleBooks creditCardExpiredOn052012 salesBook'
+	instanceVariableNames: 'book1 cartWithOneBook1 emptyCatalog catalogWithOneBook emptyCartWithCatalogWithOneBook emptyCartWithEmptyCatalog priceListWithThreeItems cartWithFiveOneBooks book2 catalogWithMultipleBooks cartWithMultipleBooks creditCardExpiredOn052012 salesBook merchantProcessor'
 	classVariableNames: ''
 	poolDictionaries: ''
 	category: 'TusLibros'!
 
-!TusLibrosTest methodsFor: 'testing' stamp: 'masch 6/24/2017 18:58:49'!
+!TusLibrosTest methodsFor: 'testing' stamp: 'masch 6/25/2017 08:55:34'!
 setUp
 	salesBook _ SalesBook new.
 	
@@ -40,6 +40,8 @@ setUp
 	cartWithMultipleBooks add: book2 withAmount: 4.
 
 	creditCardExpiredOn052012 := CreditCard withName: 'Juan Perez' withNumber: 1000000000000000 withExpirationDate: (Date newDay: 01 month: 05 year: 2012).
+	
+	merchantProcessor := MerchantProcessorSimulator withIsStolenCard: false withCreditAmount: 100.
 
 ! !
 
@@ -91,34 +93,37 @@ test07CannotAddABookThatIsNotFromTheCatalog
 	
 	! !
 
-!TusLibrosTest methodsFor: 'testing' stamp: 'masch 6/24/2017 18:59:04'!
+!TusLibrosTest methodsFor: 'testing' stamp: 'masch 6/25/2017 08:27:22'!
 test08CannotCreateACashierWithAnEmptyCart	
 	self should: [Cashier withPriceList: priceListWithThreeItems 
 		                             withCart: emptyCartWithCatalogWithOneBook 
 		                             withCreditCard: creditCardExpiredOn052012 
 		                             withPaymentDay: (Date newDay: 1  month: 4 year: 2012)
-		                             withSalesBook: salesBook]
+		                             withSalesBook: salesBook
+		                             withMerchantProcessor: merchantProcessor]
 	raise: Error - MessageNotUnderstood 
 	withExceptionDo: [ :anError |
 		self assert: anError messageText equals: 'Cannot create a cashier with an empty cart']
 	
 	! !
 
-!TusLibrosTest methodsFor: 'testing' stamp: 'masch 6/24/2017 19:08:29'!
-test09ACashierDoCheckouWithAnCartWithFiveOneBook
+!TusLibrosTest methodsFor: 'testing' stamp: 'masch 6/25/2017 09:18:13'!
+test09ACashierDoCheckoutWithAnCartWithFiveOneBook
 	|cashier| 
 	
 	cashier := Cashier withPriceList: priceListWithThreeItems 
 	                              withCart: cartWithFiveOneBooks 
 	                              withCreditCard: creditCardExpiredOn052012 
 	                              withPaymentDay: (Date newDay: 1  month: 4 year: 2012)
-	                              withSalesBook: salesBook.
+	                              withSalesBook: salesBook
+						    withMerchantProcessor: merchantProcessor.
 	
 	self assert: 5 equals: (cashier checkout).
 	self deny: cashier salesBook isEmpty.
+	self assert: merchantProcessor merchantProcessorWasCalled.
 	! !
 
-!TusLibrosTest methodsFor: 'testing' stamp: 'masch 6/24/2017 19:10:29'!
+!TusLibrosTest methodsFor: 'testing' stamp: 'masch 6/25/2017 09:19:24'!
 test10ACashierDoCheckoutWithACartWithMultipleBooks
 	|cashier| 
 	
@@ -126,10 +131,12 @@ test10ACashierDoCheckoutWithACartWithMultipleBooks
 	                              withCart: cartWithMultipleBooks 
 	                              withCreditCard:  creditCardExpiredOn052012 
 	                              withPaymentDay: (Date newDay: 1  month: 4 year: 2012)
-	                              withSalesBook: salesBook.
+	                              withSalesBook: salesBook
+	                              withMerchantProcessor: merchantProcessor.
 	
 	self assert: 11 equals: (cashier checkout).
-	self deny: cashier salesBook isEmpty.	! !
+	self deny: cashier salesBook isEmpty.
+	self assert: merchantProcessor merchantProcessorWasCalled.! !
 
 !TusLibrosTest methodsFor: 'testing' stamp: 'masch 6/24/2017 19:13:22'!
 test11CannotCreateACreditCardWithAnEmptyName
@@ -161,17 +168,60 @@ test13ACreditCardWithAnExpirationDateLessThanADayIsExpired
 	self assert: (creditCard isExpiredOn: (Date newDay: 12 month: 8 year: 2012)).
 	self assert: (creditCard isExpiredOn: (Date newDay: 1 month: 1 year: 2017)).! !
 
-!TusLibrosTest methodsFor: 'testing' stamp: 'masch 6/24/2017 19:12:04'!
+!TusLibrosTest methodsFor: 'testing' stamp: 'masch 6/25/2017 09:26:53'!
 test14CannotCreateACashierWithACreditcardExpired
 	self should: [Cashier withPriceList: priceListWithThreeItems 
 		                             withCart: cartWithFiveOneBooks 
 		                             withCreditCard: creditCardExpiredOn052012 
 		                             withPaymentDay: (Date newDay: 1  month: 12 year: 2012) 
-		                             withSalesBook: salesBook]
+		                             withSalesBook: salesBook
+		                             withMerchantProcessor: merchantProcessor]
 	raise: Error - MessageNotUnderstood 
 	withExceptionDo: [ :anError |
-		self assert: anError messageText equals: 'The expiration date card is expired'.]
+		self assert: anError messageText equals: 'The card expiration date is expired'.]
 	
+	! !
+
+!TusLibrosTest methodsFor: 'testing' stamp: 'masch 6/25/2017 09:17:20'!
+test15ACashierCannotDoCheckoutWithAStolenCreditCard
+	|cashier merchantProcessor| 
+	
+	merchantProcessor := MerchantProcessorSimulator withIsStolenCard: true withCreditAmount: 500.
+	
+	cashier := Cashier withPriceList: priceListWithThreeItems 
+	                              withCart: cartWithFiveOneBooks 
+	                              withCreditCard: creditCardExpiredOn052012 
+	                              withPaymentDay: (Date newDay: 1  month: 4 year: 2012)
+	                              withSalesBook: salesBook
+	                              withMerchantProcessor: merchantProcessor.
+	
+	self should: [cashier checkout] 
+	raise: Error - MessageNotUnderstood 
+	withExceptionDo: [:anError | 
+		self assert: anError messageText equals: 'The credit card was stolen'.
+		self assert: cashier salesBook isEmpty.
+		self deny: merchantProcessor merchantProcessorWasCalled]
+	! !
+
+!TusLibrosTest methodsFor: 'testing' stamp: 'masch 6/25/2017 09:17:12'!
+test16ACashierCannotDoCheckoutWithACreditCardWithoutEnoughCredit
+	|cashier merchantProcessor| 
+	
+	merchantProcessor := MerchantProcessorSimulator withIsStolenCard: false withCreditAmount: 2.
+	
+	cashier := Cashier withPriceList: priceListWithThreeItems 
+	                              withCart: cartWithFiveOneBooks 
+	                              withCreditCard: creditCardExpiredOn052012 
+	                              withPaymentDay: (Date newDay: 1  month: 4 year: 2012)
+	                              withSalesBook: salesBook
+	                              withMerchantProcessor: merchantProcessor.
+	
+	self should: [cashier checkout] 
+	raise: Error - MessageNotUnderstood 
+	withExceptionDo: [:anError | 
+		self assert: anError messageText equals: 'The credit card does not have enough credit'.
+		self assert: cashier salesBook isEmpty.
+		self deny: merchantProcessor merchantProcessorWasCalled.]
 	! !
 
 
@@ -291,7 +341,7 @@ with: aCatalog
 
 !classDefinition: #Cashier category: #TusLibros!
 Object subclass: #Cashier
-	instanceVariableNames: 'priceList cart salesBook'
+	instanceVariableNames: 'priceList cart salesBook merchantProcessor'
 	classVariableNames: ''
 	poolDictionaries: ''
 	category: 'TusLibros'!
@@ -300,14 +350,21 @@ Object subclass: #Cashier
 cart: aCart 
 	cart := aCart ! !
 
-!Cashier methodsFor: 'as yet unclassified' stamp: 'masch 6/24/2017 19:03:31'!
+!Cashier methodsFor: 'as yet unclassified' stamp: 'masch 6/25/2017 08:06:53'!
 checkout
 	|salePrice|
+	
 	salePrice := cart totalPrice: priceList.
+	merchantProcessor debitFrom: cart withAmount: salePrice.
+		
 	salesBook addSale: salePrice.
 	^salePrice
 	
 	! !
+
+!Cashier methodsFor: 'as yet unclassified' stamp: 'masch 6/25/2017 07:23:28'!
+merchantProcessor: aMerchantProcessor 
+	merchantProcessor := aMerchantProcessor ! !
 
 !Cashier methodsFor: 'as yet unclassified' stamp: 'masch 6/21/2017 06:24:57'!
 priceList: aPriceList
@@ -327,18 +384,18 @@ salesBook: aSalesBook
 Cashier class
 	instanceVariableNames: ''!
 
-!Cashier class methodsFor: 'instance creation' stamp: 'masch 6/24/2017 18:57:10'!
-withPriceList: aPriceList withCart: aCart withCreditCard: aCreditCard withPaymentDay: aPaymentDay withSalesBook: aSalesBook
+!Cashier class methodsFor: 'instance creation' stamp: 'masch 6/25/2017 07:21:13'!
+withPriceList: aPriceList withCart: aCart withCreditCard: aCreditCard withPaymentDay: aPaymentDay withSalesBook: aSalesBook withMerchantProcessor: aMerchantProcessor
 
 	self validateCart: aCart.
 	self validateCardOn: aCreditCard withPaymentDay: aPaymentDay.
 
-	^ self new priceList: aPriceList; cart: aCart; salesBook: aSalesBook; yourself! !
+	^ self new priceList: aPriceList; cart: aCart; salesBook: aSalesBook; merchantProcessor: aMerchantProcessor; yourself! !
 
 
-!Cashier class methodsFor: 'as yet unclassified' stamp: 'masch 6/24/2017 18:15:38'!
+!Cashier class methodsFor: 'as yet unclassified' stamp: 'masch 6/25/2017 09:23:02'!
 validateCardOn: aCreditCard withPaymentDay: aPaymentDay 
-	(aCreditCard isExpiredOn: aPaymentDay) ifTrue: [self error: 'The expiration date card is expired'].! !
+	(aCreditCard isExpiredOn: aPaymentDay) ifTrue: [self error: 'The card expiration date is expired'].! !
 
 !Cashier class methodsFor: 'as yet unclassified' stamp: 'masch 6/24/2017 18:25:48'!
 validateCart: aCart 
@@ -388,6 +445,62 @@ withName: aName withNumber: aNumber withExpirationDate: aExpirationDate
 	self validateNumber: aNumber.
 	
 	^self new name: aName; number: aNumber; expirationDate: aExpirationDate; yourself! !
+
+
+!classDefinition: #MerchantProcessor category: #TusLibros!
+Object subclass: #MerchantProcessor
+	instanceVariableNames: ''
+	classVariableNames: ''
+	poolDictionaries: ''
+	category: 'TusLibros'!
+
+!MerchantProcessor methodsFor: 'as yet unclassified' stamp: 'masch 6/25/2017 08:54:31'!
+debitFrom: aCart withAmount: anAmount
+	self shouldBeImplemented ! !
+
+!MerchantProcessor methodsFor: 'as yet unclassified' stamp: 'masch 6/25/2017 09:09:31'!
+numberCallsToMerchantProcessor
+	self shouldBeImplemented! !
+
+
+!classDefinition: #MerchantProcessorSimulator category: #TusLibros!
+MerchantProcessor subclass: #MerchantProcessorSimulator
+	instanceVariableNames: 'isStolenCard creditAmount numberCallsToMerchantProcessor'
+	classVariableNames: ''
+	poolDictionaries: ''
+	category: 'TusLibros'!
+
+!MerchantProcessorSimulator methodsFor: 'as yet unclassified' stamp: 'masch 6/25/2017 08:59:42'!
+creditAmount: aCreditAmount 
+	creditAmount := aCreditAmount! !
+
+!MerchantProcessorSimulator methodsFor: 'as yet unclassified' stamp: 'masch 6/25/2017 09:18:55'!
+debitFrom: aCart withAmount: anAmount
+	(isStolenCard) ifTrue: [ self error: 'The credit card was stolen'].
+	(creditAmount < anAmount) ifTrue: [self error: 'The credit card does not have enough credit'].
+	numberCallsToMerchantProcessor _ numberCallsToMerchantProcessor + 1.! !
+
+!MerchantProcessorSimulator methodsFor: 'as yet unclassified' stamp: 'masch 6/25/2017 08:59:33'!
+isStoleCard: aIsStolenCard
+	isStolenCard := aIsStolenCard! !
+
+!MerchantProcessorSimulator methodsFor: 'as yet unclassified' stamp: 'masch 6/25/2017 09:15:19'!
+merchantProcessorWasCalled
+	^numberCallsToMerchantProcessor > 0! !
+
+!MerchantProcessorSimulator methodsFor: 'as yet unclassified' stamp: 'masch 6/25/2017 09:14:52'!
+numberCallsToMerchantProcessor: aNumberCallsToMerchantProcessor
+	numberCallsToMerchantProcessor _ aNumberCallsToMerchantProcessor! !
+
+"-- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- "!
+
+!classDefinition: 'MerchantProcessorSimulator class' category: #TusLibros!
+MerchantProcessorSimulator class
+	instanceVariableNames: ''!
+
+!MerchantProcessorSimulator class methodsFor: 'as yet unclassified' stamp: 'masch 6/25/2017 09:12:11'!
+withIsStolenCard: aIsStolenCard withCreditAmount: aCreditAmount
+	^self new isStoleCard: aIsStolenCard; creditAmount: aCreditAmount; numberCallsToMerchantProcessor: 0; yourself.! !
 
 
 !classDefinition: #SalesBook category: #TusLibros!
