@@ -5,15 +5,15 @@ TestCase subclass: #TusLibrosTest
 	poolDictionaries: ''
 	category: 'TusLibros'!
 
-!TusLibrosTest methodsFor: 'testing' stamp: 'masch 6/25/2017 11:19:51'!
+!TusLibrosTest methodsFor: 'testing' stamp: 'PEP 6/25/2017 14:36:58'!
 setUp
 	salesBook _ SalesBook new.
 	
 	emptyCatalog := Set new.
 	emptyCartWithEmptyCatalog := Cart with: emptyCatalog.
 	
-	book1 := 'Un libro'. "Book withISIN: '1234' withTitle: 'book1' withAuthor: 'Jhon Doe'".
-	book2 := 'Dos libro'. "Book withISIN: '1234' withTitle: 'book1' withAuthor: 'Jhon Doe'".
+	book1 := 'Un libro'.
+	book2 := 'Dos libro'.
 
 	catalogWithOneBook := Set new.
 	catalogWithOneBook add: book1.
@@ -206,7 +206,7 @@ test15ACashierCannotDoCheckoutWithAStolenCreditCard
 		self deny: merchantProcessor merchantProcessorWasCalled]
 	! !
 
-!TusLibrosTest methodsFor: 'testing' stamp: 'masch 6/25/2017 10:14:21'!
+!TusLibrosTest methodsFor: 'testing' stamp: 'PEP 6/25/2017 15:41:38'!
 test16ACashierCannotDoCheckoutWithACreditCardWithoutEnoughCredit
 	|cashier merchantProcessor| 
 	
@@ -224,7 +224,7 @@ test16ACashierCannotDoCheckoutWithACreditCardWithoutEnoughCredit
 	withExceptionDo: [:anError | 
 		self assert: anError messageText equals: 'The credit card does not have enough credit'.
 		self assert: cashier salesBook isEmpty.
-		self deny: merchantProcessor merchantProcessorWasCalled.]
+		self deny: merchantProcessor merchantProcessorWasCalled]
 	! !
 
 !TusLibrosTest methodsFor: 'testing' stamp: 'masch 6/25/2017 11:47:03'!
@@ -257,43 +257,6 @@ test19CreateACartWithAInvalidUserPassword
 	raise: Error - MessageNotUnderstood 
 	withExceptionDo: [ :anError | 
 		self assert: anError messageText equals: 'Client id is invalid']! !
-
-
-!classDefinition: #Book category: #TusLibros!
-Object subclass: #Book
-	instanceVariableNames: 'title author isin'
-	classVariableNames: ''
-	poolDictionaries: ''
-	category: 'TusLibros'!
-
-!Book methodsFor: 'initialize' stamp: 'PEP 6/12/2017 23:49:49'!
-initialize
-	title := ''.
-	author := ''.
-	isin := ''! !
-
-
-!Book methodsFor: 'accessing' stamp: 'PEP 6/12/2017 23:55:32'!
-author: aBookAuthor 
-	author := aBookAuthor! !
-
-!Book methodsFor: 'accessing' stamp: 'PEP 6/12/2017 23:54:24'!
-isin: anISIN 
-	isin := anISIN! !
-
-!Book methodsFor: 'accessing' stamp: 'PEP 6/12/2017 23:54:59'!
-title: aBookTitile 
-	title := aBookTitile! !
-
-"-- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- "!
-
-!classDefinition: 'Book class' category: #TusLibros!
-Book class
-	instanceVariableNames: ''!
-
-!Book class methodsFor: 'initialization' stamp: 'PEP 6/12/2017 23:53:54'!
-withISIN: anISIN withTitle: aBookTitle withAuthor: aBookAuthor
-	^self new isin: anISIN; title: aBookTitle; author: aBookAuthor; yourself! !
 
 
 !classDefinition: #Cart category: #TusLibros!
@@ -352,13 +315,13 @@ validateQuantity: aQuantity.
 content
 	^content! !
 
-!Cart methodsFor: 'accessing' stamp: 'masch 6/24/2017 09:06:50'!
+!Cart methodsFor: 'accessing' stamp: 'PEP 6/25/2017 14:35:28'!
 totalPrice: aPricesList 
 	|totalPrice|
 		
 	totalPrice := 0.
 	content asSet do: [ :contentItem |
-		totalPrice := totalPrice + ((aPricesList at: contentItem) * (content occurrencesOf: contentItem))].
+		totalPrice := (aPricesList at: contentItem) * (content occurrencesOf: contentItem) + totalPrice].
 	
 	^totalPrice.! !
 
