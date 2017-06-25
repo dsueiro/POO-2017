@@ -1,11 +1,11 @@
 !classDefinition: #TusLibrosTest category: #TusLibros!
 TestCase subclass: #TusLibrosTest
-	instanceVariableNames: 'book1 cartWithOneBook1 emptyCatalog catalogWithOneBook emptyCartWithCatalogWithOneBook emptyCartWithEmptyCatalog priceListWithThreeItems cartWithFiveOneBooks book2 catalogWithMultipleBooks cartWithMultipleBooks creditCardExpiredOn052012 salesBook merchantProcessor'
+	instanceVariableNames: 'book1 cartWithOneBook1 emptyCatalog catalogWithOneBook emptyCartWithCatalogWithOneBook emptyCartWithEmptyCatalog priceListWithThreeItems cartWithFiveOneBooks book2 catalogWithMultipleBooks cartWithMultipleBooks creditCardExpiredOn052012 salesBook merchantProcessor validsUsers'
 	classVariableNames: ''
 	poolDictionaries: ''
 	category: 'TusLibros'!
 
-!TusLibrosTest methodsFor: 'testing' stamp: 'masch 6/25/2017 08:55:34'!
+!TusLibrosTest methodsFor: 'testing' stamp: 'masch 6/25/2017 11:19:51'!
 setUp
 	salesBook _ SalesBook new.
 	
@@ -42,6 +42,9 @@ setUp
 	creditCardExpiredOn052012 := CreditCard withName: 'Juan Perez' withNumber: 1000000000000000 withExpirationDate: (Date newDay: 01 month: 05 year: 2012).
 	
 	merchantProcessor := MerchantProcessorSimulator withIsStolenCard: false withCreditAmount: 100.
+
+	validsUsers _ Dictionary new.
+	validsUsers add: (Association key: 'clientId1' value: 'password1').
 
 ! !
 
@@ -203,13 +206,13 @@ test15ACashierCannotDoCheckoutWithAStolenCreditCard
 		self deny: merchantProcessor merchantProcessorWasCalled]
 	! !
 
-!TusLibrosTest methodsFor: 'testing' stamp: 'masch 6/25/2017 09:17:12'!
+!TusLibrosTest methodsFor: 'testing' stamp: 'masch 6/25/2017 10:14:21'!
 test16ACashierCannotDoCheckoutWithACreditCardWithoutEnoughCredit
 	|cashier merchantProcessor| 
 	
 	merchantProcessor := MerchantProcessorSimulator withIsStolenCard: false withCreditAmount: 2.
 	
-	cashier := Cashier withPriceList: priceListWithThreeItems 
+	cashier := Cashier withPriceList: priceListWithThreeItems
 	                              withCart: cartWithFiveOneBooks 
 	                              withCreditCard: creditCardExpiredOn052012 
 	                              withPaymentDay: (Date newDay: 1  month: 4 year: 2012)
@@ -223,6 +226,37 @@ test16ACashierCannotDoCheckoutWithACreditCardWithoutEnoughCredit
 		self assert: cashier salesBook isEmpty.
 		self deny: merchantProcessor merchantProcessorWasCalled.]
 	! !
+
+!TusLibrosTest methodsFor: 'testing' stamp: 'masch 6/25/2017 11:47:03'!
+test17CreateACartWithAValidUser
+	|store cartId|
+	
+	store _ Store withValidUsers: validsUsers.
+	cartId _ store createCartFor: 'clientId1' authenticatedWith: 'password1'.
+	
+	self assert: (store listCartWith: cartId) isEmpty.! !
+
+!TusLibrosTest methodsFor: 'testing' stamp: 'masch 6/25/2017 11:36:09'!
+test18CreateACartWithAInvalidUserClientId
+	|store|
+	
+	store _ Store withValidUsers: validsUsers.
+	
+	self should: [store createCartFor: 'clientId' authenticatedWith: 'password']
+	raise: Error - MessageNotUnderstood 
+	withExceptionDo: [ :anError | 
+		self assert: anError messageText equals: 'Client id is invalid']! !
+
+!TusLibrosTest methodsFor: 'testing' stamp: 'masch 6/25/2017 11:36:19'!
+test19CreateACartWithAInvalidUserPassword
+	|store|
+	
+	store _ Store withValidUsers: validsUsers.
+	
+	self should: [store createCartFor: 'clientId1' authenticatedWith: 'password']
+	raise: Error - MessageNotUnderstood 
+	withExceptionDo: [ :anError | 
+		self assert: anError messageText equals: 'Client id is invalid']! !
 
 
 !classDefinition: #Book category: #TusLibros!
@@ -337,6 +371,40 @@ Cart class
 !Cart class methodsFor: 'instance creation' stamp: 'masch 6/21/2017 06:03:56'!
 with: aCatalog
 	^self new catalog: aCatalog; yourself ! !
+
+
+!classDefinition: #CartOrder category: #TusLibros!
+Object subclass: #CartOrder
+	instanceVariableNames: 'id content'
+	classVariableNames: ''
+	poolDictionaries: ''
+	category: 'TusLibros'!
+
+!CartOrder methodsFor: 'as yet unclassified' stamp: 'masch 6/25/2017 12:16:37'!
+content: aContent 
+	content _ aContent! !
+
+!CartOrder methodsFor: 'as yet unclassified' stamp: 'masch 6/25/2017 12:13:34'!
+id  
+	^id! !
+
+!CartOrder methodsFor: 'as yet unclassified' stamp: 'masch 6/25/2017 12:12:18'!
+id: anId 
+	id _ anId! !
+
+!CartOrder methodsFor: 'as yet unclassified' stamp: 'masch 6/25/2017 12:15:12'!
+isEmpty
+	^content isEmpty! !
+
+"-- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- "!
+
+!classDefinition: 'CartOrder class' category: #TusLibros!
+CartOrder class
+	instanceVariableNames: ''!
+
+!CartOrder class methodsFor: 'as yet unclassified' stamp: 'masch 6/25/2017 12:15:59'!
+withId: anId 
+	^self new id: anId; content: OrderedCollection new; yourself! !
 
 
 !classDefinition: #Cashier category: #TusLibros!
@@ -521,3 +589,66 @@ initialize
 !SalesBook methodsFor: 'as yet unclassified' stamp: 'masch 6/24/2017 18:51:25'!
 isEmpty
 	^salesCollectionBook isEmpty.! !
+
+
+!classDefinition: #Store category: #TusLibros!
+Object subclass: #Store
+	instanceVariableNames: 'cartsList validsUsers'
+	classVariableNames: ''
+	poolDictionaries: ''
+	category: 'TusLibros'!
+
+!Store methodsFor: 'as yet unclassified' stamp: 'masch 6/25/2017 12:19:38'!
+createCartFor: aClientId authenticatedWith: aPassword
+	| cartOrder |
+	
+	self validateUserFor: aClientId authenticatedWith: aPassword.
+	
+	cartOrder _ self createCartOrder.
+	self registerCartOrder: cartOrder.
+	
+	^cartOrder id! !
+
+!Store methodsFor: 'as yet unclassified' stamp: 'masch 6/25/2017 12:14:18'!
+createCartOrder
+	| cartOrderId |
+	
+	cartOrderId _ cartsList size + 1.
+	
+	^CartOrder withId: cartOrderId.! !
+
+!Store methodsFor: 'as yet unclassified' stamp: 'masch 6/25/2017 10:48:50'!
+initialize
+	cartsList _ Dictionary new.
+	! !
+
+!Store methodsFor: 'as yet unclassified' stamp: 'masch 6/25/2017 11:35:45'!
+listCartWith: anId
+	^cartsList at: anId ifAbsent: [self error: 'Cart id is invalid']! !
+
+!Store methodsFor: 'as yet unclassified' stamp: 'masch 6/25/2017 12:20:47'!
+registerCartOrder: aCartOrder 
+	cartsList add: (Association key: aCartOrder id value: aCartOrder).
+! !
+
+!Store methodsFor: 'as yet unclassified' stamp: 'masch 6/25/2017 11:51:08'!
+validateUserFor: aClientId authenticatedWith: aPassword
+	| user |
+	
+	user _ validsUsers at: aClientId ifAbsent: [self error: 'Client id is invalid'].
+	(user = aPassword) ifFalse: [self error: 'Client id is invalid'].
+! !
+
+!Store methodsFor: 'as yet unclassified' stamp: 'masch 6/25/2017 11:05:36'!
+validsUsers: aValidsUsers
+	validsUsers _ aValidsUsers! !
+
+"-- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- "!
+
+!classDefinition: 'Store class' category: #TusLibros!
+Store class
+	instanceVariableNames: ''!
+
+!Store class methodsFor: 'as yet unclassified' stamp: 'masch 6/25/2017 11:08:45'!
+withValidUsers: aValidsUsers
+	^self new validsUsers: aValidsUsers; yourself! !
