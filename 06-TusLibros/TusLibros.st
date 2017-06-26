@@ -1,11 +1,11 @@
 !classDefinition: #TusLibrosTest category: #TusLibros!
 TestCase subclass: #TusLibrosTest
-	instanceVariableNames: 'book1 cartWithOneBook1 emptyCatalog catalogWithOneBook emptyCartWithCatalogWithOneBook emptyCartWithEmptyCatalog priceListWithThreeItems cartWithFiveOneBooks book2 catalogWithMultipleBooks cartWithMultipleBooks creditCardExpiredOn052012 salesBook merchantProcessor storeTestFactory merchantProcessorWithANonStolenCreditcardAnd100CreditAmountSimulator'
+	instanceVariableNames: 'book1 cartWithOneBook1 emptyCatalog catalogWithOneBook emptyCartWithCatalogWithOneBook emptyCartWithEmptyCatalog priceListWithThreeItems cartWithFiveOneBooks book2 catalogWithMultipleBooks cartWithMultipleBooks salesBook merchantProcessor storeTestFactory merchantProcessorWithANonStolenCreditcardAnd100CreditAmountSimulator expiredCard validCard'
 	classVariableNames: ''
 	poolDictionaries: ''
 	category: 'TusLibros'!
 
-!TusLibrosTest methodsFor: 'testing' stamp: 'masch 6/25/2017 18:10:03'!
+!TusLibrosTest methodsFor: 'testing' stamp: 'PEP 6/26/2017 00:20:01'!
 setUp
 	storeTestFactory _ StoreTestFactory new.
 	
@@ -38,7 +38,8 @@ setUp
 	cartWithMultipleBooks add: book1 withAmount: 3.
 	cartWithMultipleBooks add: book2 withAmount: 4.
 
-	creditCardExpiredOn052012 := CreditCard withName: 'Juan Perez' withNumber: 1000000000000000 withExpirationDate: (Date newDay: 01 month: 05 year: 2012).
+	validCard := CreditCard withName: 'Juan Perez' withNumber: 1000000000000000 withExpirationDate: Date tomorrow.
+	expiredCard := CreditCard withName: 'Juan Perez' withNumber: 1000000000000000 withExpirationDate: Date yesterday.
 	
 	merchantProcessorWithANonStolenCreditcardAnd100CreditAmountSimulator := storeTestFactory createMerchantProcessorWithANonStolenCreditcardAnd100CreditAmountSimulator
 ! !
@@ -91,12 +92,12 @@ test07CannotAddABookThatIsNotFromTheCatalog
 	
 	! !
 
-!TusLibrosTest methodsFor: 'testing' stamp: 'masch 6/25/2017 08:27:22'!
+!TusLibrosTest methodsFor: 'testing' stamp: 'PEP 6/26/2017 00:15:51'!
 test08CannotCreateACashierWithAnEmptyCart	
 	self should: [Cashier withPriceList: priceListWithThreeItems 
 		                             withCart: emptyCartWithCatalogWithOneBook 
 		                             withCreditCard: creditCardExpiredOn052012 
-		                             withPaymentDay: (Date newDay: 1  month: 4 year: 2012)
+		                             withPaymentTimestamp: DateAndTime now
 		                             withSalesBook: salesBook
 		                             withMerchantProcessor: merchantProcessor]
 	raise: Error - MessageNotUnderstood 
@@ -105,14 +106,14 @@ test08CannotCreateACashierWithAnEmptyCart
 	
 	! !
 
-!TusLibrosTest methodsFor: 'testing' stamp: 'masch 6/25/2017 18:07:35'!
+!TusLibrosTest methodsFor: 'testing' stamp: 'PEP 6/26/2017 00:25:25'!
 test09ACashierDoCheckoutWithAnCartWithFiveOneBook
 	|cashier| 
 	
 	cashier := Cashier withPriceList: priceListWithThreeItems 
 	                              withCart: cartWithFiveOneBooks 
-	                              withCreditCard: creditCardExpiredOn052012 
-	                              withPaymentDay: (Date newDay: 1  month: 4 year: 2012)
+	                              withCreditCard: validCard 
+		                         withPaymentTimestamp: DateAndTime now
 	                              withSalesBook: salesBook
 						    withMerchantProcessor: merchantProcessorWithANonStolenCreditcardAnd100CreditAmountSimulator.
 	
@@ -121,14 +122,14 @@ test09ACashierDoCheckoutWithAnCartWithFiveOneBook
 	self assert: merchantProcessorWithANonStolenCreditcardAnd100CreditAmountSimulator merchantProcessorWasCalled.
 	! !
 
-!TusLibrosTest methodsFor: 'testing' stamp: 'masch 6/25/2017 18:07:47'!
+!TusLibrosTest methodsFor: 'testing' stamp: 'PEP 6/26/2017 00:25:39'!
 test10ACashierDoCheckoutWithACartWithMultipleBooks
 	|cashier| 
 	
 	cashier := Cashier withPriceList: priceListWithThreeItems 
 	                              withCart: cartWithMultipleBooks 
-	                              withCreditCard:  creditCardExpiredOn052012 
-	                              withPaymentDay: (Date newDay: 1  month: 4 year: 2012)
+	                              withCreditCard:  validCard 
+	                              withPaymentTimestamp: DateAndTime now
 	                              withSalesBook: salesBook
 	                              withMerchantProcessor: merchantProcessorWithANonStolenCreditcardAnd100CreditAmountSimulator.
 	
@@ -166,21 +167,21 @@ test13ACreditCardWithAnExpirationDateLessThanADayIsExpired
 	self assert: (creditCard isExpiredOn: (Date newDay: 12 month: 8 year: 2012)).
 	self assert: (creditCard isExpiredOn: (Date newDay: 1 month: 1 year: 2017)).! !
 
-!TusLibrosTest methodsFor: 'testing' stamp: 'masch 6/25/2017 09:26:53'!
+!TusLibrosTest methodsFor: 'testing' stamp: 'PEP 6/26/2017 00:28:13'!
 test14CannotCreateACashierWithACreditcardExpired
 	self should: [Cashier withPriceList: priceListWithThreeItems 
 		                             withCart: cartWithFiveOneBooks 
-		                             withCreditCard: creditCardExpiredOn052012 
-		                             withPaymentDay: (Date newDay: 1  month: 12 year: 2012) 
+		                             withCreditCard: expiredCard 
+		                             withPaymentTimestamp: DateAndTime now
 		                             withSalesBook: salesBook
 		                             withMerchantProcessor: merchantProcessor]
 	raise: Error - MessageNotUnderstood 
 	withExceptionDo: [ :anError |
-		self assert: anError messageText equals: 'The card expiration date is expired'.]
+		self assert: anError messageText equals: 'Expired credit card'.]
 	
 	! !
 
-!TusLibrosTest methodsFor: 'testing' stamp: 'masch 6/25/2017 09:17:20'!
+!TusLibrosTest methodsFor: 'testing' stamp: 'PEP 6/26/2017 00:26:21'!
 test15ACashierCannotDoCheckoutWithAStolenCreditCard
 	|cashier merchantProcessor| 
 	
@@ -188,8 +189,8 @@ test15ACashierCannotDoCheckoutWithAStolenCreditCard
 	
 	cashier := Cashier withPriceList: priceListWithThreeItems 
 	                              withCart: cartWithFiveOneBooks 
-	                              withCreditCard: creditCardExpiredOn052012 
-	                              withPaymentDay: (Date newDay: 1  month: 4 year: 2012)
+	                              withCreditCard: validCard 
+	                              withPaymentTimestamp: DateAndTime now
 	                              withSalesBook: salesBook
 	                              withMerchantProcessor: merchantProcessor.
 	
@@ -201,7 +202,7 @@ test15ACashierCannotDoCheckoutWithAStolenCreditCard
 		self deny: merchantProcessor merchantProcessorWasCalled]
 	! !
 
-!TusLibrosTest methodsFor: 'testing' stamp: 'PEP 6/25/2017 15:41:38'!
+!TusLibrosTest methodsFor: 'testing' stamp: 'PEP 6/26/2017 00:26:25'!
 test16ACashierCannotDoCheckoutWithACreditCardWithoutEnoughCredit
 	|cashier merchantProcessor| 
 	
@@ -209,8 +210,8 @@ test16ACashierCannotDoCheckoutWithACreditCardWithoutEnoughCredit
 	
 	cashier := Cashier withPriceList: priceListWithThreeItems
 	                              withCart: cartWithFiveOneBooks 
-	                              withCreditCard: creditCardExpiredOn052012 
-	                              withPaymentDay: (Date newDay: 1  month: 4 year: 2012)
+	                              withCreditCard: validCard 
+	                              withPaymentTimestamp: DateAndTime now
 	                              withSalesBook: salesBook
 	                              withMerchantProcessor: merchantProcessor.
 	
@@ -281,7 +282,7 @@ test21AddingANonExtingBookInStoreShouldNotBeAddedToCart
 		self assert: (store listCartWith: cartId) isEmpty.
 		self assert: store salesBook isEmpty]! !
 
-!TusLibrosTest methodsFor: 'testing' stamp: 'masch 6/25/2017 18:13:27'!
+!TusLibrosTest methodsFor: 'testing' stamp: 'PEP 6/26/2017 00:24:45'!
 test22CanDoCheckoutWithValidCardAnOneBookAddedToCart
 	|store cartId |
 	
@@ -289,8 +290,22 @@ test22CanDoCheckoutWithValidCardAnOneBookAddedToCart
 	cartId _ store createCartFor: 'clientId1' authenticatedWith: 'password1'.
 	store addToCartWith: cartId withBookISBN: 'Un libro' withBookAmount: 1.
 	
-	store checkoutWith: cartId withCreditCardNumber: 1000000000000000 withExpirationDate: (Date newDay: 01 month: 05 year: 2012) withOwner: 'Juan Perez'.
+	store checkoutWith: cartId withCreditCard: validCard.
  	self deny: store salesBook isEmpty! !
+
+!TusLibrosTest methodsFor: 'testing' stamp: 'PEP 6/26/2017 00:24:10'!
+test23CannotDoCheckoutWithExpiredCard
+	|store cartId |
+	
+	store _ storeTestFactory createAStoreWithUsers.
+	cartId _ store createCartFor: 'clientId1' authenticatedWith: 'password1'.
+	store addToCartWith: cartId withBookISBN: 'Un libro' withBookAmount: 1.
+	
+	self should: [store checkoutWith: cartId withCreditCard: expiredCard.]
+	raise: Error - MessageNotUnderstood 
+ 	withExceptionDo: [:anError |
+		self assert: anError messageText equals: 'Expired credit card'.
+		self assert: store salesBook isEmpty]! !
 
 
 !classDefinition: #Cart category: #TusLibros!
@@ -469,18 +484,18 @@ salesBook: aSalesBook
 Cashier class
 	instanceVariableNames: ''!
 
-!Cashier class methodsFor: 'instance creation' stamp: 'masch 6/25/2017 07:21:13'!
-withPriceList: aPriceList withCart: aCart withCreditCard: aCreditCard withPaymentDay: aPaymentDay withSalesBook: aSalesBook withMerchantProcessor: aMerchantProcessor
+!Cashier class methodsFor: 'instance creation' stamp: 'PEP 6/26/2017 00:14:07'!
+withPriceList: aPriceList withCart: aCart withCreditCard: aCreditCard withPaymentTimestamp: aPaymentTimestamp withSalesBook: aSalesBook withMerchantProcessor: aMerchantProcessor
 
 	self validateCart: aCart.
-	self validateCardOn: aCreditCard withPaymentDay: aPaymentDay.
+	self validateCardOn: aCreditCard withPaymentDay: aPaymentTimestamp date.
 
 	^ self new priceList: aPriceList; cart: aCart; salesBook: aSalesBook; merchantProcessor: aMerchantProcessor; yourself! !
 
 
-!Cashier class methodsFor: 'as yet unclassified' stamp: 'masch 6/25/2017 09:23:02'!
+!Cashier class methodsFor: 'as yet unclassified' stamp: 'PEP 6/26/2017 00:21:57'!
 validateCardOn: aCreditCard withPaymentDay: aPaymentDay 
-	(aCreditCard isExpiredOn: aPaymentDay) ifTrue: [self error: 'The card expiration date is expired'].! !
+	(aCreditCard isExpiredOn: aPaymentDay) ifTrue: [self error: 'Expired credit card'].! !
 
 !Cashier class methodsFor: 'as yet unclassified' stamp: 'masch 6/24/2017 18:25:48'!
 validateCart: aCart 
@@ -626,18 +641,16 @@ addToCartWith: aCartId withBookISBN: anISBN withBookAmount: anAmount
 catalog: aCatalog 
 	catalog _ aCatalog! !
 
-!Store methodsFor: 'as yet unclassified' stamp: 'masch 6/25/2017 18:09:28'!
-checkoutWith: aCartOrderId withCreditCardNumber: aCreditCardNumber withExpirationDate: aExpirationDate withOwner: aOwner
-
-	| cartOrder cashier creditCard |
+!Store methodsFor: 'as yet unclassified' stamp: 'PEP 6/26/2017 00:11:29'!
+checkoutWith: aCartOrderId withCreditCard: aCreditCard 
+	| cartOrder cashier|
 
 	cartOrder _ cartsOrdersList at: aCartOrderId.
-	creditCard _ CreditCard withName: aOwner withNumber: aCreditCardNumber withExpirationDate: aExpirationDate.
 
 	cashier := Cashier withPriceList: pricesList 
 	                              withCart: cartOrder content
-	                              withCreditCard: creditCard 
-	                              withPaymentDay: (Date newDay: 1  month: 4 year: 2012)
+	                              withCreditCard: aCreditCard 
+	                              withPaymentTimestamp: DateAndTime now
 	                              withSalesBook: salesBook 
 						    withMerchantProcessor: merchantProcessor.
 						
