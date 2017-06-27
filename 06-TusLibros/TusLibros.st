@@ -44,101 +44,8 @@ setUp
 	merchantProcessorWithANonStolenCreditcardAnd100CreditAmountSimulator := storeTestFactory createMerchantProcessorWithANonStolenCreditcardAnd100CreditAmountSimulator
 ! !
 
-!TusLibrosTest methodsFor: 'testing' stamp: 'masch 6/14/2017 07:31:34'!
-test01ANewCartIsEmpty
-	self assert: emptyCartWithEmptyCatalog isEmpty.! !
-
-!TusLibrosTest methodsFor: 'testing' stamp: 'masch 6/14/2017 07:32:59'!
-test02AfterAddingABookACartIsNotEmpty
-	emptyCartWithCatalogWithOneBook add: book1.
-	self deny: emptyCartWithCatalogWithOneBook isEmpty.! !
-
-!TusLibrosTest methodsFor: 'testing' stamp: 'masch 6/14/2017 07:33:35'!
-test03AfterAddingABookTheCartContainsOneBook1
-	self assert: (cartWithOneBook1 includes: book1).
-	self assert: (cartWithOneBook1 quantityOf: book1) equals: 1! !
-
-!TusLibrosTest methodsFor: 'testing' stamp: 'masch 6/14/2017 07:33:57'!
-test04BeforeAddingABookTheCartDoesNotContainsIt
-	self deny: (emptyCartWithEmptyCatalog includes: book1).! !
-
-!TusLibrosTest methodsFor: 'testing' stamp: 'masch 6/14/2017 07:34:32'!
-test05CannotAddABookWithQuantityLessThanOne
-	self should: [emptyCartWithCatalogWithOneBook add: book1 withAmount: 0]
-	raise: Error - MessageNotUnderstood 
-	withExceptionDo: [ :anError |
-		self assert: anError messageText equals: 'Cannot add quantity less than one'.
-		self assert: emptyCartWithCatalogWithOneBook isEmpty]
-	
-	! !
-
-!TusLibrosTest methodsFor: 'testing' stamp: 'masch 6/14/2017 07:34:47'!
-test06CannotAddABookWithANonIntegerQuantity
-	self should: [emptyCartWithCatalogWithOneBook add: book1 withAmount: 1.1]
-	raise: Error - MessageNotUnderstood 
-	withExceptionDo: [ :anError |
-		self assert: anError messageText equals: 'Cannot add a non integer quantity'.
-		self assert: emptyCartWithCatalogWithOneBook isEmpty]
-	
-	! !
-
-!TusLibrosTest methodsFor: 'testing' stamp: 'masch 6/21/2017 06:35:16'!
-test07CannotAddABookThatIsNotFromTheCatalog
-	self should: [emptyCartWithEmptyCatalog add: book1]
-	raise: Error - MessageNotUnderstood 
-	withExceptionDo: [ :anError |
-		self assert: anError messageText equals: 'Cannot add a book outside the catalog'.
-		self assert: emptyCartWithEmptyCatalog isEmpty]
-	
-	! !
-
-!TusLibrosTest methodsFor: 'testing' stamp: 'masch 6/27/2017 08:38:16'!
-test08CannotCreateACashierWithAnEmptyCart	
-	self should: [Cashier withPriceList: priceListWithThreeItems 
-		                             withCart: emptyCartWithCatalogWithOneBook 
-		                             withCreditCard: validCard 
-		                             withPaymentTimestamp: DateAndTime now
-		                             withSalesBook: salesBook
-		                             withMerchantProcessor: merchantProcessor]
-	raise: Error - MessageNotUnderstood 
-	withExceptionDo: [ :anError |
-		self assert: anError messageText equals: 'Cannot create a cashier with an empty cart']
-	
-	! !
-
-!TusLibrosTest methodsFor: 'testing' stamp: 'PEP 6/26/2017 00:25:25'!
-test09ACashierDoCheckoutWithAnCartWithFiveOneBook
-	|cashier| 
-	
-	cashier := Cashier withPriceList: priceListWithThreeItems 
-	                              withCart: cartWithFiveOneBooks 
-	                              withCreditCard: validCard 
-		                         withPaymentTimestamp: DateAndTime now
-	                              withSalesBook: salesBook
-						    withMerchantProcessor: merchantProcessorWithANonStolenCreditcardAnd100CreditAmountSimulator.
-	
-	self assert: 5 equals: (cashier checkout).
-	self deny: cashier salesBook isEmpty.
-	self assert: merchantProcessorWithANonStolenCreditcardAnd100CreditAmountSimulator merchantProcessorWasCalled.
-	! !
-
-!TusLibrosTest methodsFor: 'testing' stamp: 'PEP 6/26/2017 00:25:39'!
-test10ACashierDoCheckoutWithACartWithMultipleBooks
-	|cashier| 
-	
-	cashier := Cashier withPriceList: priceListWithThreeItems 
-	                              withCart: cartWithMultipleBooks 
-	                              withCreditCard:  validCard 
-	                              withPaymentTimestamp: DateAndTime now
-	                              withSalesBook: salesBook
-	                              withMerchantProcessor: merchantProcessorWithANonStolenCreditcardAnd100CreditAmountSimulator.
-	
-	self assert: 11 equals: (cashier checkout).
-	self deny: cashier salesBook isEmpty.
-	self assert: merchantProcessorWithANonStolenCreditcardAnd100CreditAmountSimulator merchantProcessorWasCalled.! !
-
 !TusLibrosTest methodsFor: 'testing' stamp: 'masch 6/24/2017 19:13:22'!
-test11CannotCreateACreditCardWithAnEmptyName
+testCannotCreateACreditCardWithAnEmptyName
 	self should: [CreditCard withName: '' 
 		                                   withNumber: 12345 
 		                                   withExpirationDate: (Date newDay: 01 month: 05 year: 2012)]
@@ -147,7 +54,7 @@ test11CannotCreateACreditCardWithAnEmptyName
 		self assert: anError messageText equals: 'Name cannot be empty'].! !
 
 !TusLibrosTest methodsFor: 'testing' stamp: 'masch 6/24/2017 19:13:42'!
-test12CannotCreateACreditCardWithAPositiveNumberLessThanSixteenLength
+testCannotCreateACreditCardWithAPositiveNumberLessThanSixteenLength
 	self should: [CreditCard withName: 'Juan Perez' 
 		                                   withNumber: 999999999999999 
 		                                   withExpirationDate: (Date newDay: 01 month: 05 year: 2012)]
@@ -156,7 +63,7 @@ test12CannotCreateACreditCardWithAPositiveNumberLessThanSixteenLength
 		self assert: anError messageText equals: 'Number must have at least 16 numbers'].! !
 
 !TusLibrosTest methodsFor: 'testing' stamp: 'masch 6/24/2017 19:14:06'!
-test13ACreditCardWithAnExpirationDateLessThanADayIsExpired
+testACreditCardWithAnExpirationDateLessThanADayIsExpired
 	|creditCard|
 	
 	creditCard := CreditCard withName: 'Juan Perez' 
@@ -168,7 +75,7 @@ test13ACreditCardWithAnExpirationDateLessThanADayIsExpired
 	self assert: (creditCard isExpiredOn: (Date newDay: 1 month: 1 year: 2017)).! !
 
 !TusLibrosTest methodsFor: 'testing' stamp: 'PEP 6/26/2017 00:28:13'!
-test14CannotCreateACashierWithACreditcardExpired
+testCannotCreateACashierWithACreditcardExpired
 	self should: [Cashier withPriceList: priceListWithThreeItems 
 		                             withCart: cartWithFiveOneBooks 
 		                             withCreditCard: expiredCard 
@@ -182,7 +89,7 @@ test14CannotCreateACashierWithACreditcardExpired
 	! !
 
 !TusLibrosTest methodsFor: 'testing' stamp: 'PEP 6/26/2017 00:26:21'!
-test15ACashierCannotDoCheckoutWithAStolenCreditCard
+testACashierCannotDoCheckoutWithAStolenCreditCard
 	|cashier merchantProcessor| 
 	
 	merchantProcessor := MerchantProcessorSimulator withIsStolenCard: true withCreditAmount: 500.
@@ -203,7 +110,7 @@ test15ACashierCannotDoCheckoutWithAStolenCreditCard
 	! !
 
 !TusLibrosTest methodsFor: 'testing' stamp: 'PEP 6/26/2017 00:26:25'!
-test16ACashierCannotDoCheckoutWithACreditCardWithoutEnoughCredit
+testACashierCannotDoCheckoutWithACreditCardWithoutEnoughCredit
 	|cashier merchantProcessor| 
 	
 	merchantProcessor := MerchantProcessorSimulator withIsStolenCard: false withCreditAmount: 2.
@@ -224,7 +131,7 @@ test16ACashierCannotDoCheckoutWithACreditCardWithoutEnoughCredit
 	! !
 
 !TusLibrosTest methodsFor: 'testing' stamp: 'masch 6/27/2017 08:10:06'!
-test17CreateACartWithAValidUser
+testCreateACartWithAValidUser
 	|store cartId|
 	
 	store _ storeTestFactory createAStore.
@@ -233,7 +140,7 @@ test17CreateACartWithAValidUser
 	self assert: (store listCartWith: cartId) isEmpty.! !
 
 !TusLibrosTest methodsFor: 'testing' stamp: 'masch 6/27/2017 08:09:46'!
-test18CreateACartWithAInvalidUserClientId
+testCreateACartWithAInvalidUserClientId
 	|store|
 	
 	store _ storeTestFactory createAStore.
@@ -244,7 +151,7 @@ test18CreateACartWithAInvalidUserClientId
 		self assert: anError messageText equals: 'Client id is invalid']! !
 
 !TusLibrosTest methodsFor: 'testing' stamp: 'masch 6/27/2017 08:10:13'!
-test19CreateACartWithAInvalidUserPassword
+testCreateACartWithAInvalidUserPassword
 	|store|
 	
 	store _ storeTestFactory createAStore.
@@ -255,7 +162,7 @@ test19CreateACartWithAInvalidUserPassword
 		self assert: anError messageText equals: 'Client id is invalid']! !
 
 !TusLibrosTest methodsFor: 'testing' stamp: 'masch 6/27/2017 08:10:09'!
-test20AddingABookFromTheStoreToCartTheCartShouldIncludeIt
+testAddingABookFromTheStoreToCartTheCartShouldIncludeIt
 	|store cartId cartOrder |
 	
 	store _ storeTestFactory createAStore.
@@ -269,7 +176,7 @@ test20AddingABookFromTheStoreToCartTheCartShouldIncludeIt
 	self assert: store salesBook isEmpty! !
 
 !TusLibrosTest methodsFor: 'testing' stamp: 'masch 6/27/2017 08:10:01'!
-test21AddingANonExtingBookInStoreShouldNotBeAddedToCart
+testAddingANonExtingBookInStoreShouldNotBeAddedToCart
 	|store cartId |
 	
 	store _ storeTestFactory createAStore.
@@ -283,7 +190,7 @@ test21AddingANonExtingBookInStoreShouldNotBeAddedToCart
 		self assert: store salesBook isEmpty]! !
 
 !TusLibrosTest methodsFor: 'testing' stamp: 'masch 6/27/2017 08:10:16'!
-test22StoreCanDoCheckoutWithValidCardAnOneBookAddedToCart
+testStoreCanDoCheckoutWithValidCardAnOneBookAddedToCart
 	|store cartId |
 	
 	store _ storeTestFactory createAStore.
@@ -294,7 +201,7 @@ test22StoreCanDoCheckoutWithValidCardAnOneBookAddedToCart
  	self deny: store salesBook isEmpty! !
 
 !TusLibrosTest methodsFor: 'testing' stamp: 'masch 6/27/2017 08:09:58'!
-test23StoreCannotDoCheckoutWithExpiredCard
+testStoreCannotDoCheckoutWithExpiredCard
 	|store cartId |
 	
 	store _ storeTestFactory createAStore.
@@ -307,7 +214,7 @@ test23StoreCannotDoCheckoutWithExpiredCard
 		self assert: anError messageText equals: 'Expired credit card'.]! !
 
 !TusLibrosTest methodsFor: 'testing' stamp: 'masch 6/27/2017 08:12:00'!
-test24StoreCannotAddToCartWithACartOrderCreatedAfterTimeoutExceeded
+testStoreCannotAddToCartWithACartOrderCreatedAfterTimeoutExceeded
 	|store cartId dateTimeSimulator |
 	
 	dateTimeSimulator _ storeTestFactory createDateTimeSimulator.
@@ -322,7 +229,7 @@ test24StoreCannotAddToCartWithACartOrderCreatedAfterTimeoutExceeded
 		self assert: anError messageText equals: 'The cart order is expired'.]! !
 
 !TusLibrosTest methodsFor: 'testing' stamp: 'masch 6/27/2017 08:11:56'!
-test25StoreCannotDoCheckoutWithACartOrderCreatedAfterTimeoutExceeded
+testStoreCannotDoCheckoutWithACartOrderCreatedAfterTimeoutExceeded
 	|store cartId dateTimeSimulator |
 	
 	dateTimeSimulator _ storeTestFactory createDateTimeSimulator.
@@ -338,7 +245,7 @@ test25StoreCannotDoCheckoutWithACartOrderCreatedAfterTimeoutExceeded
 		self assert: anError messageText equals: 'The cart order is expired'.]! !
 
 !TusLibrosTest methodsFor: 'testing' stamp: 'masch 6/27/2017 08:12:03'!
-test26StoreCannotListCartACartOrderCreatedAfterTimeoutExceeded
+testStoreCannotListCartACartOrderCreatedAfterTimeoutExceeded
 	|store cartId dateTimeSimulator |
 	
 	dateTimeSimulator _ storeTestFactory createDateTimeSimulator.
@@ -353,7 +260,7 @@ test26StoreCannotListCartACartOrderCreatedAfterTimeoutExceeded
 		self assert: anError messageText equals: 'The cart order is expired'.]! !
 
 !TusLibrosTest methodsFor: 'testing' stamp: 'masch 6/27/2017 08:12:06'!
-test27ListCartOrderItemsFromAValidOrder
+testListCartOrderItemsFromAValidOrder
 	|store cartId dateTimeSimulator cartOrderItems |
 	
 	dateTimeSimulator _ storeTestFactory createDateTimeSimulator.
@@ -366,7 +273,7 @@ test27ListCartOrderItemsFromAValidOrder
 	self deny: cartOrderItems isEmpty.! !
 
 !TusLibrosTest methodsFor: 'testing' stamp: 'masch 6/27/2017 08:11:47'!
-test28CannotListPurchasesFromANonExistingClientId
+testCannotListPurchasesFromANonExistingClientId
 	|store dateTimeSimulator |
 	
 	dateTimeSimulator _ storeTestFactory createDateTimeSimulator.
@@ -379,7 +286,7 @@ test28CannotListPurchasesFromANonExistingClientId
 		self assert: anError messageText equals: 'Client id is invalid']! !
 
 !TusLibrosTest methodsFor: 'testing' stamp: 'masch 6/27/2017 08:12:19'!
-test29CannotListPurchasesFromAUserPasswordInvalidForAnExistingClientId
+testCannotListPurchasesFromAUserPasswordInvalidForAnExistingClientId
 	|store dateTimeSimulator |
 	
 	dateTimeSimulator _ storeTestFactory createDateTimeSimulator.
@@ -392,7 +299,7 @@ test29CannotListPurchasesFromAUserPasswordInvalidForAnExistingClientId
 		self assert: anError messageText equals: 'Client id is invalid']! !
 
 !TusLibrosTest methodsFor: 'testing' stamp: 'masch 6/27/2017 08:12:16'!
-test30ListPurchacesFromAnExistingUser
+testListPurchacesFromAnExistingUser
 	|store cartId dateTimeSimulator cartOrder |
 	
 	dateTimeSimulator _ storeTestFactory createDateTimeSimulator.
@@ -406,7 +313,7 @@ test30ListPurchacesFromAnExistingUser
 	self deny: cartOrder isEmpty.! !
 
 !TusLibrosTest methodsFor: 'testing' stamp: 'masch 6/27/2017 08:12:10'!
-test31StoreCannotAddToCartWithACartOrderAccededAfterTimeoutExceeded
+testStoreCannotAddToCartWithACartOrderAccededAfterTimeoutExceeded
 	|store cartId dateTimeSimulator |
 	
 	dateTimeSimulator _ storeTestFactory createDateTimeSimulator.
@@ -427,6 +334,99 @@ test31StoreCannotAddToCartWithACartOrderAccededAfterTimeoutExceeded
 	raise: Error - MessageNotUnderstood 
  	withExceptionDo: [:anError |
 		self assert: anError messageText equals: 'The cart order is expired'.]! !
+
+!TusLibrosTest methodsFor: 'testing' stamp: 'masch 6/27/2017 08:51:15'!
+testACashierDoCheckoutWithACartWithMultipleBooks
+	|cashier| 
+	
+	cashier := Cashier withPriceList: priceListWithThreeItems 
+	                              withCart: cartWithMultipleBooks 
+	                              withCreditCard:  validCard 
+	                              withPaymentTimestamp: DateAndTime now
+	                              withSalesBook: salesBook
+	                              withMerchantProcessor: merchantProcessorWithANonStolenCreditcardAnd100CreditAmountSimulator.
+	
+	self assert: 11 equals: (cashier checkout).
+	self deny: cashier salesBook isEmpty.
+	self assert: merchantProcessorWithANonStolenCreditcardAnd100CreditAmountSimulator merchantProcessorWasCalled.! !
+
+!TusLibrosTest methodsFor: 'testing' stamp: 'masch 6/27/2017 08:51:09'!
+testACashierDoCheckoutWithAnCartWithFiveOneBook
+	|cashier| 
+	
+	cashier := Cashier withPriceList: priceListWithThreeItems 
+	                              withCart: cartWithFiveOneBooks 
+	                              withCreditCard: validCard 
+		                         withPaymentTimestamp: DateAndTime now
+	                              withSalesBook: salesBook
+						    withMerchantProcessor: merchantProcessorWithANonStolenCreditcardAnd100CreditAmountSimulator.
+	
+	self assert: 5 equals: (cashier checkout).
+	self deny: cashier salesBook isEmpty.
+	self assert: merchantProcessorWithANonStolenCreditcardAnd100CreditAmountSimulator merchantProcessorWasCalled.
+	! !
+
+!TusLibrosTest methodsFor: 'testing' stamp: 'masch 6/27/2017 08:49:20'!
+testANewCartIsEmpty
+	self assert: emptyCartWithEmptyCatalog isEmpty.! !
+
+!TusLibrosTest methodsFor: 'testing' stamp: 'masch 6/27/2017 08:49:42'!
+testAfterAddingABookACartIsNotEmpty
+	emptyCartWithCatalogWithOneBook add: book1.
+	self deny: emptyCartWithCatalogWithOneBook isEmpty.! !
+
+!TusLibrosTest methodsFor: 'testing' stamp: 'masch 6/27/2017 08:49:56'!
+testAfterAddingABookTheCartContainsOneBook1
+	self assert: (cartWithOneBook1 includes: book1).
+	self assert: (cartWithOneBook1 quantityOf: book1) equals: 1! !
+
+!TusLibrosTest methodsFor: 'testing' stamp: 'masch 6/27/2017 08:50:03'!
+testBeforeAddingABookTheCartDoesNotContainsIt
+	self deny: (emptyCartWithEmptyCatalog includes: book1).! !
+
+!TusLibrosTest methodsFor: 'testing' stamp: 'masch 6/27/2017 08:50:56'!
+testCannotAddABookThatIsNotFromTheCatalog
+	self should: [emptyCartWithEmptyCatalog add: book1]
+	raise: Error - MessageNotUnderstood 
+	withExceptionDo: [ :anError |
+		self assert: anError messageText equals: 'Cannot add a book outside the catalog'.
+		self assert: emptyCartWithEmptyCatalog isEmpty]
+	
+	! !
+
+!TusLibrosTest methodsFor: 'testing' stamp: 'masch 6/27/2017 08:50:51'!
+testCannotAddABookWithANonIntegerQuantity
+	self should: [emptyCartWithCatalogWithOneBook add: book1 withAmount: 1.1]
+	raise: Error - MessageNotUnderstood 
+	withExceptionDo: [ :anError |
+		self assert: anError messageText equals: 'Cannot add a non integer quantity'.
+		self assert: emptyCartWithCatalogWithOneBook isEmpty]
+	
+	! !
+
+!TusLibrosTest methodsFor: 'testing' stamp: 'masch 6/27/2017 08:50:12'!
+testCannotAddABookWithQuantityLessThanOne
+	self should: [emptyCartWithCatalogWithOneBook add: book1 withAmount: 0]
+	raise: Error - MessageNotUnderstood 
+	withExceptionDo: [ :anError |
+		self assert: anError messageText equals: 'Cannot add quantity less than one'.
+		self assert: emptyCartWithCatalogWithOneBook isEmpty]
+	
+	! !
+
+!TusLibrosTest methodsFor: 'testing' stamp: 'masch 6/27/2017 08:51:02'!
+testCannotCreateACashierWithAnEmptyCart	
+	self should: [Cashier withPriceList: priceListWithThreeItems 
+		                             withCart: emptyCartWithCatalogWithOneBook 
+		                             withCreditCard: validCard 
+		                             withPaymentTimestamp: DateAndTime now
+		                             withSalesBook: salesBook
+		                             withMerchantProcessor: merchantProcessor]
+	raise: Error - MessageNotUnderstood 
+	withExceptionDo: [ :anError |
+		self assert: anError messageText equals: 'Cannot create a cashier with an empty cart']
+	
+	! !
 
 
 !classDefinition: #Cart category: #TusLibros!
