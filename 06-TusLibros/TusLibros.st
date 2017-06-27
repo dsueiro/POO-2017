@@ -5,7 +5,7 @@ TestCase subclass: #TusLibrosTest
 	poolDictionaries: ''
 	category: 'TusLibros'!
 
-!TusLibrosTest methodsFor: 'testing' stamp: 'PEP 6/26/2017 00:20:01'!
+!TusLibrosTest methodsFor: 'testing' stamp: 'masch 6/27/2017 08:44:06'!
 setUp
 	storeTestFactory _ StoreTestFactory new.
 	
@@ -92,11 +92,11 @@ test07CannotAddABookThatIsNotFromTheCatalog
 	
 	! !
 
-!TusLibrosTest methodsFor: 'testing' stamp: 'PEP 6/26/2017 00:15:51'!
+!TusLibrosTest methodsFor: 'testing' stamp: 'masch 6/27/2017 08:38:16'!
 test08CannotCreateACashierWithAnEmptyCart	
 	self should: [Cashier withPriceList: priceListWithThreeItems 
 		                             withCart: emptyCartWithCatalogWithOneBook 
-		                             withCreditCard: creditCardExpiredOn052012 
+		                             withCreditCard: validCard 
 		                             withPaymentTimestamp: DateAndTime now
 		                             withSalesBook: salesBook
 		                             withMerchantProcessor: merchantProcessor]
@@ -223,42 +223,42 @@ test16ACashierCannotDoCheckoutWithACreditCardWithoutEnoughCredit
 		self deny: merchantProcessor merchantProcessorWasCalled]
 	! !
 
-!TusLibrosTest methodsFor: 'testing' stamp: 'masch 6/25/2017 16:16:08'!
+!TusLibrosTest methodsFor: 'testing' stamp: 'masch 6/27/2017 08:10:06'!
 test17CreateACartWithAValidUser
 	|store cartId|
 	
-	store _ storeTestFactory createAStoreWithUsers.
+	store _ storeTestFactory createAStore.
 	cartId _ store createCartFor: 'clientId1' authenticatedWith: 'password1'.
 	
 	self assert: (store listCartWith: cartId) isEmpty.! !
 
-!TusLibrosTest methodsFor: 'testing' stamp: 'masch 6/25/2017 16:15:19'!
+!TusLibrosTest methodsFor: 'testing' stamp: 'masch 6/27/2017 08:09:46'!
 test18CreateACartWithAInvalidUserClientId
 	|store|
 	
-	store _ storeTestFactory createAStoreWithUsers.
+	store _ storeTestFactory createAStore.
 	
 	self should: [store createCartFor: 'clientId' authenticatedWith: 'password']
 	raise: Error - MessageNotUnderstood 
 	withExceptionDo: [ :anError | 
 		self assert: anError messageText equals: 'Client id is invalid']! !
 
-!TusLibrosTest methodsFor: 'testing' stamp: 'masch 6/25/2017 16:15:08'!
+!TusLibrosTest methodsFor: 'testing' stamp: 'masch 6/27/2017 08:10:13'!
 test19CreateACartWithAInvalidUserPassword
 	|store|
 	
-	store _ storeTestFactory createAStoreWithUsers.
+	store _ storeTestFactory createAStore.
 	
 	self should: [store createCartFor: 'clientId1' authenticatedWith: 'password']
 	raise: Error - MessageNotUnderstood 
 	withExceptionDo: [ :anError | 
 		self assert: anError messageText equals: 'Client id is invalid']! !
 
-!TusLibrosTest methodsFor: 'testing' stamp: 'masch 6/25/2017 18:14:40'!
+!TusLibrosTest methodsFor: 'testing' stamp: 'masch 6/27/2017 08:10:09'!
 test20AddingABookFromTheStoreToCartTheCartShouldIncludeIt
 	|store cartId cartOrder |
 	
-	store _ storeTestFactory createAStoreWithUsers.
+	store _ storeTestFactory createAStore.
 	cartId _ store createCartFor: 'clientId1' authenticatedWith: 'password1'.
 	store addToCartWith: cartId withBookISBN: 'Un libro' withBookAmount: 5.
 
@@ -268,11 +268,11 @@ test20AddingABookFromTheStoreToCartTheCartShouldIncludeIt
 	self assert: 5 equals: (cartOrder content occurrencesOf: 'Un libro').
 	self assert: store salesBook isEmpty! !
 
-!TusLibrosTest methodsFor: 'testing' stamp: 'masch 6/25/2017 18:15:01'!
+!TusLibrosTest methodsFor: 'testing' stamp: 'masch 6/27/2017 08:10:01'!
 test21AddingANonExtingBookInStoreShouldNotBeAddedToCart
 	|store cartId |
 	
-	store _ storeTestFactory createAStoreWithUsers.
+	store _ storeTestFactory createAStore.
 	cartId _ store createCartFor: 'clientId1' authenticatedWith: 'password1'.
 	
 	self should: [store addToCartWith: cartId withBookISBN: 'Un libro2' withBookAmount: 1] 
@@ -282,79 +282,151 @@ test21AddingANonExtingBookInStoreShouldNotBeAddedToCart
 		self assert: (store listCartWith: cartId) isEmpty.
 		self assert: store salesBook isEmpty]! !
 
-!TusLibrosTest methodsFor: 'testing' stamp: 'PEP 6/26/2017 00:24:45'!
-test22CanDoCheckoutWithValidCardAnOneBookAddedToCart
+!TusLibrosTest methodsFor: 'testing' stamp: 'masch 6/27/2017 08:10:16'!
+test22StoreCanDoCheckoutWithValidCardAnOneBookAddedToCart
 	|store cartId |
 	
-	store _ storeTestFactory createAStoreWithUsers.
+	store _ storeTestFactory createAStore.
 	cartId _ store createCartFor: 'clientId1' authenticatedWith: 'password1'.
 	store addToCartWith: cartId withBookISBN: 'Un libro' withBookAmount: 1.
 	
 	store checkoutWith: cartId withCreditCard: validCard.
  	self deny: store salesBook isEmpty! !
 
-!TusLibrosTest methodsFor: 'testing' stamp: 'PEP 6/26/2017 00:24:10'!
-test23CannotDoCheckoutWithExpiredCard
+!TusLibrosTest methodsFor: 'testing' stamp: 'masch 6/27/2017 08:09:58'!
+test23StoreCannotDoCheckoutWithExpiredCard
 	|store cartId |
 	
-	store _ storeTestFactory createAStoreWithUsers.
+	store _ storeTestFactory createAStore.
 	cartId _ store createCartFor: 'clientId1' authenticatedWith: 'password1'.
 	store addToCartWith: cartId withBookISBN: 'Un libro' withBookAmount: 1.
 	
 	self should: [store checkoutWith: cartId withCreditCard: expiredCard.]
 	raise: Error - MessageNotUnderstood 
  	withExceptionDo: [:anError |
-		self assert: anError messageText equals: 'Expired credit card'.
-		self assert: store salesBook isEmpty]! !
+		self assert: anError messageText equals: 'Expired credit card'.]! !
 
-!TusLibrosTest methodsFor: 'testing' stamp: 'masch 6/26/2017 07:23:15'!
-test24CannotAddToCartACartOrderCreatedAfterTimeoutExceeded
+!TusLibrosTest methodsFor: 'testing' stamp: 'masch 6/27/2017 08:12:00'!
+test24StoreCannotAddToCartWithACartOrderCreatedAfterTimeoutExceeded
 	|store cartId dateTimeSimulator |
 	
 	dateTimeSimulator _ storeTestFactory createDateTimeSimulator.
-	store _ storeTestFactory createAStoreWithUsers: dateTimeSimulator.
+	store _ storeTestFactory createAStoreWithDateTime: dateTimeSimulator.
 	cartId _ store createCartFor: 'clientId1' authenticatedWith: 'password1'.
 
-	dateTimeSimulator now: (DateAndTime tomorrow).
+	dateTimeSimulator advanceDurationToDateTimeNow: storeTestFactory cartOrderValidDuration.
 	
 	self should: [store addToCartWith: cartId withBookISBN: 'Un libro' withBookAmount: 1.]
 	raise: Error - MessageNotUnderstood 
  	withExceptionDo: [:anError |
-		self assert: anError messageText equals: 'Cannot do a checkout after 30 minutes'.
-		self assert: store salesBook isEmpty]! !
+		self assert: anError messageText equals: 'The cart order is expired'.]! !
 
-!TusLibrosTest methodsFor: 'testing' stamp: 'masch 6/26/2017 07:21:47'!
-test25CannotDoCheckoutWithACartOrderCreatedAfterTimeoutExceeded
+!TusLibrosTest methodsFor: 'testing' stamp: 'masch 6/27/2017 08:11:56'!
+test25StoreCannotDoCheckoutWithACartOrderCreatedAfterTimeoutExceeded
 	|store cartId dateTimeSimulator |
 	
 	dateTimeSimulator _ storeTestFactory createDateTimeSimulator.
-	store _ storeTestFactory createAStoreWithUsers: dateTimeSimulator.
+	store _ storeTestFactory createAStoreWithDateTime: dateTimeSimulator.
 	cartId _ store createCartFor: 'clientId1' authenticatedWith: 'password1'.
 	store addToCartWith: cartId withBookISBN: 'Un libro' withBookAmount: 1.
 	
-	dateTimeSimulator now: (DateAndTime tomorrow).
+	dateTimeSimulator advanceDurationToDateTimeNow: storeTestFactory cartOrderValidDuration.
 	
 	self should: [store checkoutWith: cartId withCreditCard: validCard.]
 	raise: Error - MessageNotUnderstood 
  	withExceptionDo: [:anError |
-		self assert: anError messageText equals: 'Cannot do a checkout after 30 minutes'.
-		self assert: store salesBook isEmpty]! !
+		self assert: anError messageText equals: 'The cart order is expired'.]! !
 
-!TusLibrosTest methodsFor: 'testing' stamp: 'masch 6/26/2017 08:04:07'!
-test26CannotListCartACartOrderCreatedAfterTimeoutExceeded
+!TusLibrosTest methodsFor: 'testing' stamp: 'masch 6/27/2017 08:12:03'!
+test26StoreCannotListCartACartOrderCreatedAfterTimeoutExceeded
 	|store cartId dateTimeSimulator |
 	
 	dateTimeSimulator _ storeTestFactory createDateTimeSimulator.
-	store _ storeTestFactory createAStoreWithUsers: dateTimeSimulator.
+	store _ storeTestFactory createAStoreWithDateTime: dateTimeSimulator.
 	cartId _ store createCartFor: 'clientId1' authenticatedWith: 'password1'.
 		
-	dateTimeSimulator now: (DateAndTime tomorrow).
+	dateTimeSimulator advanceDurationToDateTimeNow: storeTestFactory cartOrderValidDuration.
 	
 	self should: [store listCartWith: cartId.]
 	raise: Error - MessageNotUnderstood 
  	withExceptionDo: [:anError |
-		self assert: anError messageText equals: 'Cannot do a checkout after 30 minutes'.
-		self assert: store salesBook isEmpty]! !
+		self assert: anError messageText equals: 'The cart order is expired'.]! !
+
+!TusLibrosTest methodsFor: 'testing' stamp: 'masch 6/27/2017 08:12:06'!
+test27ListCartOrderItemsFromAValidOrder
+	|store cartId dateTimeSimulator cartOrderItems |
+	
+	dateTimeSimulator _ storeTestFactory createDateTimeSimulator.
+	store _ storeTestFactory createAStoreWithDateTime: dateTimeSimulator.
+	cartId _ store createCartFor: 'clientId1' authenticatedWith: 'password1'.
+
+	store addToCartWith: cartId withBookISBN: 'Un libro' withBookAmount: 1.
+
+	cartOrderItems _ store listCartWith: cartId.
+	self deny: cartOrderItems isEmpty.! !
+
+!TusLibrosTest methodsFor: 'testing' stamp: 'masch 6/27/2017 08:11:47'!
+test28CannotListPurchasesFromANonExistingClientId
+	|store dateTimeSimulator |
+	
+	dateTimeSimulator _ storeTestFactory createDateTimeSimulator.
+	store _ storeTestFactory createAStoreWithDateTime: dateTimeSimulator.
+	store createCartFor: 'clientId1' authenticatedWith: 'password1'.
+
+	self should: [store listPurchacesFor: 'clientId12' authenticatedWith: 'password1'.] 
+	raise: Error -	MessageNotUnderstood 
+	withExceptionDo: [:anError |
+		self assert: anError messageText equals: 'Client id is invalid']! !
+
+!TusLibrosTest methodsFor: 'testing' stamp: 'masch 6/27/2017 08:12:19'!
+test29CannotListPurchasesFromAUserPasswordInvalidForAnExistingClientId
+	|store dateTimeSimulator |
+	
+	dateTimeSimulator _ storeTestFactory createDateTimeSimulator.
+	store _ storeTestFactory createAStoreWithDateTime: dateTimeSimulator.
+	store createCartFor: 'clientId1' authenticatedWith: 'password1'.
+
+	self should: [store listPurchacesFor: 'clientId1' authenticatedWith: 'password2'.] 
+	raise: Error -	MessageNotUnderstood 
+	withExceptionDo: [:anError |
+		self assert: anError messageText equals: 'Client id is invalid']! !
+
+!TusLibrosTest methodsFor: 'testing' stamp: 'masch 6/27/2017 08:12:16'!
+test30ListPurchacesFromAnExistingUser
+	|store cartId dateTimeSimulator cartOrder |
+	
+	dateTimeSimulator _ storeTestFactory createDateTimeSimulator.
+	store _ storeTestFactory createAStoreWithDateTime: dateTimeSimulator.
+	cartId _ store createCartFor: 'clientId1' authenticatedWith: 'password1'.
+
+	store addToCartWith: cartId withBookISBN: 'Un libro' withBookAmount: 1.
+	store checkoutWith: cartId withCreditCard: validCard.
+
+	cartOrder _ store listPurchacesFor: 'clientId1' authenticatedWith: 'password1'.
+	self deny: cartOrder isEmpty.! !
+
+!TusLibrosTest methodsFor: 'testing' stamp: 'masch 6/27/2017 08:12:10'!
+test31StoreCannotAddToCartWithACartOrderAccededAfterTimeoutExceeded
+	|store cartId dateTimeSimulator |
+	
+	dateTimeSimulator _ storeTestFactory createDateTimeSimulator.
+	store _ storeTestFactory createAStoreWithDateTime: dateTimeSimulator.
+	cartId _ store createCartFor: 'clientId1' authenticatedWith: 'password1'.
+
+	store addToCartWith: cartId withBookISBN: 'Un libro' withBookAmount: 1.
+	
+	dateTimeSimulator advanceDurationToDateTimeNow: (Duration minutes: 26).
+	store addToCartWith: cartId withBookISBN: 'Un libro' withBookAmount: 1.
+	
+	dateTimeSimulator advanceDurationToDateTimeNow: (Duration minutes: 16).
+	store addToCartWith: cartId withBookISBN: 'Un libro' withBookAmount: 1.
+
+	dateTimeSimulator advanceDurationToDateTimeNow: storeTestFactory cartOrderValidDuration.
+	
+	self should: [store addToCartWith: cartId withBookISBN: 'Un libro' withBookAmount: 1.]
+	raise: Error - MessageNotUnderstood 
+ 	withExceptionDo: [:anError |
+		self assert: anError messageText equals: 'The cart order is expired'.]! !
 
 
 !classDefinition: #Cart category: #TusLibros!
@@ -363,10 +435,6 @@ Object subclass: #Cart
 	classVariableNames: ''
 	poolDictionaries: ''
 	category: 'TusLibros'!
-
-!Cart methodsFor: 'inspecting' stamp: 'PEP 6/13/2017 00:02:35'!
-initialize
-	content := Bag new! !
 
 !Cart methodsFor: 'inspecting' stamp: 'PEP 6/12/2017 22:15:34'!
 isEmpty
@@ -398,9 +466,9 @@ quantityOf: aBook
 	^content occurrencesOf: aBook! !
 
 
-!Cart methodsFor: 'initializing' stamp: 'masch 6/14/2017 07:02:27'!
-catalog: aCatalog
-	catalog := aCatalog.! !
+!Cart methodsFor: 'initializing' stamp: 'masch 6/27/2017 08:18:29'!
+initialize
+	content := Bag new! !
 
 
 !Cart methodsFor: 'validating' stamp: 'masch 6/14/2017 07:11:37'!
@@ -412,6 +480,10 @@ validateQuantity: aQuantity.
 	aQuantity strictlyPositive ifFalse: [self error: 'Cannot add quantity less than one'].
 	aQuantity isInteger ifFalse: [self error: 'Cannot add a non integer quantity'].! !
 
+
+!Cart methodsFor: 'accessing' stamp: 'masch 6/27/2017 08:18:18'!
+catalog: aCatalog
+	catalog := aCatalog.! !
 
 !Cart methodsFor: 'accessing' stamp: 'masch 6/21/2017 07:01:11'!
 content
@@ -440,46 +512,76 @@ with: aCatalog
 
 !classDefinition: #CartOrder category: #TusLibros!
 Object subclass: #CartOrder
-	instanceVariableNames: 'id content creationTimeStamp'
+	instanceVariableNames: 'id content creationTimeStamp clientId lastAccededTimeStamp datime timeoutDuration'
 	classVariableNames: ''
 	poolDictionaries: ''
 	category: 'TusLibros'!
 
-!CartOrder methodsFor: 'as yet unclassified' stamp: 'masch 6/25/2017 16:43:18'!
+!CartOrder methodsFor: 'evaluating' stamp: 'masch 6/27/2017 08:17:00'!
+isExpired
+	^(datime now substractDateAndtime: lastAccededTimeStamp) > timeoutDuration! !
+
+
+!CartOrder methodsFor: 'adding' stamp: 'masch 6/25/2017 16:43:18'!
 add: anISBN
 	content add: anISBN! !
 
-!CartOrder methodsFor: 'as yet unclassified' stamp: 'masch 6/25/2017 17:07:58'!
+!CartOrder methodsFor: 'adding' stamp: 'masch 6/27/2017 07:37:33'!
 add: anISBN withAmount: anAmount
-	content add: anISBN withAmount: anAmount! !
+	content add: anISBN withAmount: anAmount.! !
 
-!CartOrder methodsFor: 'as yet unclassified' stamp: 'masch 6/25/2017 17:14:50'!
+
+!CartOrder methodsFor: 'accessing' stamp: 'masch 6/27/2017 08:14:12'!
+clientId
+	^clientId! !
+
+!CartOrder methodsFor: 'accessing' stamp: 'masch 6/27/2017 08:14:37'!
+clientId: aClientId
+	clientId _ aClientId ! !
+
+!CartOrder methodsFor: 'accessing' stamp: 'masch 6/27/2017 08:14:53'!
 content
 	^content ! !
 
-!CartOrder methodsFor: 'as yet unclassified' stamp: 'masch 6/25/2017 12:16:37'!
+!CartOrder methodsFor: 'accessing' stamp: 'masch 6/27/2017 08:14:45'!
 content: aContent 
 	content _ aContent! !
 
-!CartOrder methodsFor: 'as yet unclassified' stamp: 'masch 6/26/2017 07:08:18'!
+!CartOrder methodsFor: 'accessing' stamp: 'masch 6/27/2017 08:15:00'!
 creationTimeStamp
 	^creationTimeStamp ! !
 
-!CartOrder methodsFor: 'as yet unclassified' stamp: 'masch 6/26/2017 07:08:40'!
+!CartOrder methodsFor: 'accessing' stamp: 'masch 6/27/2017 08:15:07'!
 creationTimeStamp: aTimeStamp 
 	creationTimeStamp _ aTimeStamp ! !
 
-!CartOrder methodsFor: 'as yet unclassified' stamp: 'masch 6/25/2017 12:13:34'!
+!CartOrder methodsFor: 'accessing' stamp: 'masch 6/27/2017 08:15:15'!
+dateTime: aDateTime 
+	datime _ aDateTime! !
+
+!CartOrder methodsFor: 'accessing' stamp: 'masch 6/27/2017 08:15:33'!
 id  
 	^id! !
 
-!CartOrder methodsFor: 'as yet unclassified' stamp: 'masch 6/25/2017 12:12:18'!
+!CartOrder methodsFor: 'accessing' stamp: 'masch 6/27/2017 08:15:23'!
 id: anId 
 	id _ anId! !
 
-!CartOrder methodsFor: 'as yet unclassified' stamp: 'masch 6/25/2017 12:15:12'!
+!CartOrder methodsFor: 'accessing' stamp: 'masch 6/27/2017 08:16:13'!
 isEmpty
 	^content isEmpty! !
+
+!CartOrder methodsFor: 'accessing' stamp: 'masch 6/27/2017 08:15:40'!
+lastAccededTimeStamp
+	^lastAccededTimeStamp ! !
+
+!CartOrder methodsFor: 'accessing' stamp: 'masch 6/27/2017 08:15:57'!
+lastAccededTimeStamp: aTimeStamp
+	lastAccededTimeStamp _ aTimeStamp ! !
+
+!CartOrder methodsFor: 'accessing' stamp: 'masch 6/27/2017 08:15:47'!
+timeoutDuration: aDuration 
+	timeoutDuration _ aDuration ! !
 
 "-- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- "!
 
@@ -487,9 +589,9 @@ isEmpty
 CartOrder class
 	instanceVariableNames: ''!
 
-!CartOrder class methodsFor: 'as yet unclassified' stamp: 'masch 6/26/2017 07:09:43'!
-withId: anId withCart: aCart withCreationTimeStamp: aTimeStamp
-	^self new id: anId; content: aCart; creationTimeStamp: aTimeStamp; yourself! !
+!CartOrder class methodsFor: 'instance creation' stamp: 'masch 6/27/2017 07:53:19'!
+withId: anId withCart: aCart withOwner: aClientId withDateTime: aDateTime withTimeOutDuration: aTimeOutDuration
+	^self new id: anId; content: aCart; creationTimeStamp: aDateTime now; lastAccededTimeStamp: aDateTime now; clientId: aClientId;  dateTime: aDateTime; timeoutDuration: aTimeOutDuration; yourself! !
 
 
 !classDefinition: #Cashier category: #TusLibros!
@@ -499,11 +601,7 @@ Object subclass: #Cashier
 	poolDictionaries: ''
 	category: 'TusLibros'!
 
-!Cashier methodsFor: 'as yet unclassified' stamp: 'masch 6/24/2017 18:18:28'!
-cart: aCart 
-	cart := aCart ! !
-
-!Cashier methodsFor: 'as yet unclassified' stamp: 'masch 6/25/2017 08:06:53'!
+!Cashier methodsFor: 'executing' stamp: 'masch 6/27/2017 08:21:18'!
 checkout
 	|salePrice|
 	
@@ -511,23 +609,26 @@ checkout
 	merchantProcessor debitFrom: cart withAmount: salePrice.
 		
 	salesBook addSale: salePrice.
-	^salePrice
-	
-	! !
+	^salePrice! !
 
-!Cashier methodsFor: 'as yet unclassified' stamp: 'masch 6/25/2017 07:23:28'!
+
+!Cashier methodsFor: 'accessing' stamp: 'masch 6/24/2017 18:18:28'!
+cart: aCart 
+	cart := aCart ! !
+
+!Cashier methodsFor: 'accessing' stamp: 'masch 6/25/2017 07:23:28'!
 merchantProcessor: aMerchantProcessor 
 	merchantProcessor := aMerchantProcessor ! !
 
-!Cashier methodsFor: 'as yet unclassified' stamp: 'masch 6/21/2017 06:24:57'!
+!Cashier methodsFor: 'accessing' stamp: 'masch 6/21/2017 06:24:57'!
 priceList: aPriceList
 	priceList := aPriceList ! !
 
-!Cashier methodsFor: 'as yet unclassified' stamp: 'masch 6/24/2017 19:08:58'!
+!Cashier methodsFor: 'accessing' stamp: 'masch 6/24/2017 19:08:58'!
 salesBook
 	^salesBook.! !
 
-!Cashier methodsFor: 'as yet unclassified' stamp: 'masch 6/24/2017 19:05:25'!
+!Cashier methodsFor: 'accessing' stamp: 'masch 6/24/2017 19:05:25'!
 salesBook: aSalesBook
 	salesBook := aSalesBook! !
 
@@ -537,7 +638,7 @@ salesBook: aSalesBook
 Cashier class
 	instanceVariableNames: ''!
 
-!Cashier class methodsFor: 'instance creation' stamp: 'PEP 6/26/2017 00:14:07'!
+!Cashier class methodsFor: 'instance creation' stamp: 'masch 6/27/2017 08:38:40'!
 withPriceList: aPriceList withCart: aCart withCreditCard: aCreditCard withPaymentTimestamp: aPaymentTimestamp withSalesBook: aSalesBook withMerchantProcessor: aMerchantProcessor
 
 	self validateCart: aCart.
@@ -546,11 +647,11 @@ withPriceList: aPriceList withCart: aCart withCreditCard: aCreditCard withPaymen
 	^ self new priceList: aPriceList; cart: aCart; salesBook: aSalesBook; merchantProcessor: aMerchantProcessor; yourself! !
 
 
-!Cashier class methodsFor: 'as yet unclassified' stamp: 'PEP 6/26/2017 00:21:57'!
+!Cashier class methodsFor: 'validating' stamp: 'PEP 6/26/2017 00:21:57'!
 validateCardOn: aCreditCard withPaymentDay: aPaymentDay 
 	(aCreditCard isExpiredOn: aPaymentDay) ifTrue: [self error: 'Expired credit card'].! !
 
-!Cashier class methodsFor: 'as yet unclassified' stamp: 'masch 6/24/2017 18:25:48'!
+!Cashier class methodsFor: 'validating' stamp: 'masch 6/24/2017 18:25:48'!
 validateCart: aCart 
 	(aCart isEmpty) ifTrue: [self error: 'Cannot create a cashier with an empty cart'].! !
 
@@ -562,19 +663,20 @@ Object subclass: #CreditCard
 	poolDictionaries: ''
 	category: 'TusLibros'!
 
-!CreditCard methodsFor: 'as yet unclassified' stamp: 'masch 6/24/2017 15:36:47'!
-expirationDate: anExpirationDate 
-	expirationDate := anExpirationDate! !
-
-!CreditCard methodsFor: 'as yet unclassified' stamp: 'masch 6/24/2017 17:51:27'!
+!CreditCard methodsFor: 'evaluating' stamp: 'masch 6/27/2017 08:21:54'!
 isExpiredOn: aDateFrom 
 	^expirationDate < aDateFrom! !
 
-!CreditCard methodsFor: 'as yet unclassified' stamp: 'masch 6/24/2017 15:28:40'!
+
+!CreditCard methodsFor: 'accessing' stamp: 'masch 6/24/2017 15:36:47'!
+expirationDate: anExpirationDate 
+	expirationDate := anExpirationDate! !
+
+!CreditCard methodsFor: 'accessing' stamp: 'masch 6/24/2017 15:28:40'!
 name: aName 
 	name := aName ! !
 
-!CreditCard methodsFor: 'as yet unclassified' stamp: 'masch 6/24/2017 15:32:29'!
+!CreditCard methodsFor: 'accessing' stamp: 'masch 6/24/2017 15:32:29'!
 number: aNumber 
 	number := aNumber! !
 
@@ -584,15 +686,16 @@ number: aNumber
 CreditCard class
 	instanceVariableNames: ''!
 
-!CreditCard class methodsFor: 'as yet unclassified' stamp: 'masch 6/24/2017 16:20:16'!
+!CreditCard class methodsFor: 'validating' stamp: 'masch 6/24/2017 16:20:16'!
 validateName: aName
 	(aName isEmpty) ifTrue: [ self error: 'Name cannot be empty'].! !
 
-!CreditCard class methodsFor: 'as yet unclassified' stamp: 'masch 6/24/2017 16:29:24'!
+!CreditCard class methodsFor: 'validating' stamp: 'masch 6/24/2017 16:29:24'!
 validateNumber: aNumber 
 	(aNumber < 1000000000000000) ifTrue: [self error: 'Number must have at least 16 numbers'].! !
 
-!CreditCard class methodsFor: 'as yet unclassified' stamp: 'masch 6/24/2017 16:25:13'!
+
+!CreditCard class methodsFor: 'instance creation' stamp: 'masch 6/27/2017 08:40:55'!
 withName: aName withNumber: aNumber withExpirationDate: aExpirationDate
 	self validateName: aName.
 	self validateNumber: aNumber.
@@ -607,7 +710,7 @@ Object subclass: #DateTime
 	poolDictionaries: ''
 	category: 'TusLibros'!
 
-!DateTime methodsFor: 'as yet unclassified' stamp: 'masch 6/26/2017 06:31:45'!
+!DateTime methodsFor: 'accessing' stamp: 'masch 6/27/2017 08:23:45'!
 now
 	self shouldBeImplemented ! !
 
@@ -619,15 +722,21 @@ DateTime subclass: #DateTimeSimulator
 	poolDictionaries: ''
 	category: 'TusLibros'!
 
-!DateTimeSimulator methodsFor: 'as yet unclassified' stamp: 'masch 6/26/2017 06:48:48'!
+!DateTimeSimulator methodsFor: 'initializing' stamp: 'masch 6/27/2017 08:25:34'!
 initialize
 	dateTimeNow _ DateAndTime now.! !
 
-!DateTimeSimulator methodsFor: 'as yet unclassified' stamp: 'masch 6/26/2017 06:49:35'!
+
+!DateTimeSimulator methodsFor: 'accessing' stamp: 'masch 6/27/2017 06:13:43'!
+advanceDurationToDateTimeNow: aDuration
+	dateTimeNow _ dateTimeNow substractDuration: aDuration negated.
+! !
+
+!DateTimeSimulator methodsFor: 'accessing' stamp: 'masch 6/26/2017 06:49:35'!
 now
 	^dateTimeNow! !
 
-!DateTimeSimulator methodsFor: 'as yet unclassified' stamp: 'masch 6/26/2017 06:50:51'!
+!DateTimeSimulator methodsFor: 'accessing' stamp: 'masch 6/26/2017 06:50:51'!
 now: aDateAndTime
 	dateTimeNow _ aDateAndTime ! !
 
@@ -639,11 +748,11 @@ Object subclass: #MerchantProcessor
 	poolDictionaries: ''
 	category: 'TusLibros'!
 
-!MerchantProcessor methodsFor: 'as yet unclassified' stamp: 'masch 6/25/2017 08:54:31'!
+!MerchantProcessor methodsFor: 'external' stamp: 'masch 6/25/2017 08:54:31'!
 debitFrom: aCart withAmount: anAmount
 	self shouldBeImplemented ! !
 
-!MerchantProcessor methodsFor: 'as yet unclassified' stamp: 'masch 6/25/2017 09:09:31'!
+!MerchantProcessor methodsFor: 'external' stamp: 'masch 6/25/2017 09:09:31'!
 numberCallsToMerchantProcessor
 	self shouldBeImplemented! !
 
@@ -655,27 +764,28 @@ MerchantProcessor subclass: #MerchantProcessorSimulator
 	poolDictionaries: ''
 	category: 'TusLibros'!
 
-!MerchantProcessorSimulator methodsFor: 'as yet unclassified' stamp: 'masch 6/25/2017 08:59:42'!
+!MerchantProcessorSimulator methodsFor: 'simulating' stamp: 'masch 6/27/2017 08:27:48'!
+isStoleCard: aIsStolenCard
+	isStolenCard := aIsStolenCard! !
+
+!MerchantProcessorSimulator methodsFor: 'simulating' stamp: 'masch 6/27/2017 08:27:56'!
+merchantProcessorWasCalled
+	^numberCallsToMerchantProcessor > 0! !
+
+!MerchantProcessorSimulator methodsFor: 'simulating' stamp: 'masch 6/27/2017 08:28:03'!
+numberCallsToMerchantProcessor: aNumberCallsToMerchantProcessor
+	numberCallsToMerchantProcessor _ aNumberCallsToMerchantProcessor! !
+
+
+!MerchantProcessorSimulator methodsFor: 'external' stamp: 'masch 6/25/2017 08:59:42'!
 creditAmount: aCreditAmount 
 	creditAmount := aCreditAmount! !
 
-!MerchantProcessorSimulator methodsFor: 'as yet unclassified' stamp: 'masch 6/25/2017 09:18:55'!
+!MerchantProcessorSimulator methodsFor: 'external' stamp: 'masch 6/25/2017 09:18:55'!
 debitFrom: aCart withAmount: anAmount
 	(isStolenCard) ifTrue: [ self error: 'The credit card was stolen'].
 	(creditAmount < anAmount) ifTrue: [self error: 'The credit card does not have enough credit'].
 	numberCallsToMerchantProcessor _ numberCallsToMerchantProcessor + 1.! !
-
-!MerchantProcessorSimulator methodsFor: 'as yet unclassified' stamp: 'masch 6/25/2017 08:59:33'!
-isStoleCard: aIsStolenCard
-	isStolenCard := aIsStolenCard! !
-
-!MerchantProcessorSimulator methodsFor: 'as yet unclassified' stamp: 'masch 6/25/2017 09:15:19'!
-merchantProcessorWasCalled
-	^numberCallsToMerchantProcessor > 0! !
-
-!MerchantProcessorSimulator methodsFor: 'as yet unclassified' stamp: 'masch 6/25/2017 09:14:52'!
-numberCallsToMerchantProcessor: aNumberCallsToMerchantProcessor
-	numberCallsToMerchantProcessor _ aNumberCallsToMerchantProcessor! !
 
 "-- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- "!
 
@@ -683,7 +793,7 @@ numberCallsToMerchantProcessor: aNumberCallsToMerchantProcessor
 MerchantProcessorSimulator class
 	instanceVariableNames: ''!
 
-!MerchantProcessorSimulator class methodsFor: 'as yet unclassified' stamp: 'masch 6/25/2017 09:12:11'!
+!MerchantProcessorSimulator class methodsFor: 'instance creation' stamp: 'masch 6/27/2017 08:41:18'!
 withIsStolenCard: aIsStolenCard withCreditAmount: aCreditAmount
 	^self new isStoleCard: aIsStolenCard; creditAmount: aCreditAmount; numberCallsToMerchantProcessor: 0; yourself.! !
 
@@ -695,27 +805,29 @@ Object subclass: #SalesBook
 	poolDictionaries: ''
 	category: 'TusLibros'!
 
-!SalesBook methodsFor: 'as yet unclassified' stamp: 'masch 6/24/2017 19:00:15'!
-addSale: aSalePrice
-	^salesCollectionBook add: aSalePrice! !
-
-!SalesBook methodsFor: 'as yet unclassified' stamp: 'masch 6/24/2017 18:54:16'!
+!SalesBook methodsFor: 'initializing' stamp: 'masch 6/27/2017 08:30:06'!
 initialize
 	salesCollectionBook _ OrderedCollection new.! !
 
-!SalesBook methodsFor: 'as yet unclassified' stamp: 'masch 6/24/2017 18:51:25'!
+
+!SalesBook methodsFor: 'adding' stamp: 'masch 6/24/2017 19:00:15'!
+addSale: aSalePrice
+	^salesCollectionBook add: aSalePrice! !
+
+
+!SalesBook methodsFor: 'evaluating' stamp: 'masch 6/27/2017 08:28:33'!
 isEmpty
 	^salesCollectionBook isEmpty.! !
 
 
 !classDefinition: #Store category: #TusLibros!
 Object subclass: #Store
-	instanceVariableNames: 'cartsOrdersList validsUsers catalog pricesList salesBook merchantProcessor dateTime'
+	instanceVariableNames: 'cartsOrdersList validsUsers catalog pricesList salesBook merchantProcessor dateTime usersPurchaces cartOrderTimeOutDuration'
 	classVariableNames: ''
 	poolDictionaries: ''
 	category: 'TusLibros'!
 
-!Store methodsFor: 'as yet unclassified' stamp: 'masch 6/26/2017 07:40:47'!
+!Store methodsFor: 'modifying' stamp: 'masch 6/27/2017 08:30:57'!
 addToCartWith: aCartId withBookISBN: anISBN withBookAmount: anAmount
 	| cartOrder |
 	
@@ -723,11 +835,7 @@ addToCartWith: aCartId withBookISBN: anISBN withBookAmount: anAmount
 	self validateCartOrderIsExpired: cartOrder.
 	cartOrder add: anISBN withAmount: anAmount.! !
 
-!Store methodsFor: 'as yet unclassified' stamp: 'masch 6/25/2017 16:34:06'!
-catalog: aCatalog 
-	catalog _ aCatalog! !
-
-!Store methodsFor: 'as yet unclassified' stamp: 'masch 6/26/2017 07:40:50'!
+!Store methodsFor: 'modifying' stamp: 'masch 6/27/2017 08:31:25'!
 checkoutWith: aCartOrderId withCreditCard: aCreditCard 
 	| cartOrder cashier |
 
@@ -741,80 +849,102 @@ checkoutWith: aCartOrderId withCreditCard: aCreditCard
 	                              withSalesBook: salesBook 
 						    withMerchantProcessor: merchantProcessor.
 						
-	cashier checkout! !
+	cashier checkout.
+	
+	self registerPurchase: cartOrder.
+	
+	! !
 
-!Store methodsFor: 'as yet unclassified' stamp: 'masch 6/25/2017 12:19:38'!
+!Store methodsFor: 'modifying' stamp: 'masch 6/27/2017 08:32:02'!
 createCartFor: aClientId authenticatedWith: aPassword
 	| cartOrder |
 	
 	self validateUserFor: aClientId authenticatedWith: aPassword.
 	
-	cartOrder _ self createCartOrder.
+	cartOrder _ self createCartOrderFor: aClientId.
 	self registerCartOrder: cartOrder.
 	
 	^cartOrder id! !
 
-!Store methodsFor: 'as yet unclassified' stamp: 'masch 6/26/2017 07:09:59'!
-createCartOrder
+!Store methodsFor: 'modifying' stamp: 'masch 6/27/2017 08:32:09'!
+createCartOrderFor: aClientId
 	| cartOrderId cart |
 	
 	cartOrderId _ cartsOrdersList size.
 	cart _ Cart with: catalog.
 	
-	^CartOrder withId: cartOrderId withCart: cart withCreationTimeStamp: dateTime now! !
+	^CartOrder withId: cartOrderId withCart: cart withOwner: aClientId withDateTime: dateTime withTimeOutDuration: cartOrderTimeOutDuration ! !
 
-!Store methodsFor: 'as yet unclassified' stamp: 'masch 6/26/2017 06:37:27'!
+!Store methodsFor: 'modifying' stamp: 'masch 6/27/2017 08:33:24'!
+registerCartOrder: aCartOrder 
+	cartsOrdersList add: (Association key: aCartOrder id value: aCartOrder).
+! !
+
+!Store methodsFor: 'modifying' stamp: 'masch 6/27/2017 08:33:39'!
+registerPurchase: aCartOrder
+	usersPurchaces add: (Association key: (aCartOrder clientId) value: aCartOrder).
+! !
+
+
+!Store methodsFor: 'initializing' stamp: 'masch 6/27/2017 08:32:48'!
+initialize
+	cartsOrdersList _ Dictionary new.
+	usersPurchaces _ Dictionary new.! !
+
+
+!Store methodsFor: 'accessing' stamp: 'masch 6/27/2017 08:01:56'!
+cartOrderTimeOutDuration: aDuration 
+	cartOrderTimeOutDuration _ aDuration ! !
+
+!Store methodsFor: 'accessing' stamp: 'masch 6/25/2017 16:34:06'!
+catalog: aCatalog 
+	catalog _ aCatalog! !
+
+!Store methodsFor: 'accessing' stamp: 'masch 6/26/2017 06:37:27'!
 dateTime: aDateTime
 	dateTime _ aDateTime ! !
 
-!Store methodsFor: 'as yet unclassified' stamp: 'masch 6/25/2017 17:25:38'!
-initialize
-	cartsOrdersList _ Dictionary new.
-	! !
-
-!Store methodsFor: 'as yet unclassified' stamp: 'masch 6/26/2017 07:40:54'!
+!Store methodsFor: 'accessing' stamp: 'masch 6/26/2017 07:40:54'!
 listCartWith: anCartId
 	^cartsOrdersList at: anCartId 
 	ifPresent:[ :cartOrder | self validateCartOrderIsExpired: cartOrder. ^cartOrder]
 	ifAbsent: [self error: 'Cart id is invalid']! !
 
-!Store methodsFor: 'as yet unclassified' stamp: 'masch 6/25/2017 18:08:49'!
+!Store methodsFor: 'accessing' stamp: 'masch 6/27/2017 06:52:37'!
+listPurchacesFor: aClientId authenticatedWith: aPassword
+	self validateUserFor: aClientId authenticatedWith: aPassword.
+	^usersPurchaces at: aClientId ! !
+
+!Store methodsFor: 'accessing' stamp: 'masch 6/25/2017 18:08:49'!
 merchantProcessor: aMerchantProcessor 
 	merchantProcessor _ aMerchantProcessor! !
 
-!Store methodsFor: 'as yet unclassified' stamp: 'masch 6/25/2017 17:46:11'!
+!Store methodsFor: 'accessing' stamp: 'masch 6/25/2017 17:46:11'!
 pricesList: aPricesList
 	pricesList _ aPricesList! !
 
-!Store methodsFor: 'as yet unclassified' stamp: 'masch 6/25/2017 17:25:33'!
-registerCartOrder: aCartOrder 
-	cartsOrdersList add: (Association key: aCartOrder id value: aCartOrder).
-! !
-
-!Store methodsFor: 'as yet unclassified' stamp: 'masch 6/25/2017 18:13:47'!
+!Store methodsFor: 'accessing' stamp: 'masch 6/25/2017 18:13:47'!
 salesBook
 	^salesBook! !
 
-!Store methodsFor: 'as yet unclassified' stamp: 'masch 6/25/2017 17:59:24'!
+!Store methodsFor: 'accessing' stamp: 'masch 6/25/2017 17:59:24'!
 salesBook: aSalesBook 
 	salesBook _ aSalesBook ! !
 
-!Store methodsFor: 'as yet unclassified' stamp: 'masch 6/26/2017 07:55:03'!
+!Store methodsFor: 'accessing' stamp: 'masch 6/27/2017 07:48:24'!
 validateCartOrderIsExpired: aCartOrder
-	| minutesFromCreationTimeStamp |
-	minutesFromCreationTimeStamp _ (dateTime now - aCartOrder creationTimeStamp) minutes.
-	(minutesFromCreationTimeStamp > 30) ifTrue: [self error: 'Cannot do a checkout after 30 minutes'].
+	aCartOrder isExpired ifTrue: [self error: 'The cart order is expired'].
+	aCartOrder lastAccededTimeStamp: (dateTime now).
 ! !
 
-!Store methodsFor: 'as yet unclassified' stamp: 'masch 6/25/2017 11:51:08'!
+!Store methodsFor: 'accessing' stamp: 'masch 6/27/2017 06:41:09'!
 validateUserFor: aClientId authenticatedWith: aPassword
 	| user |
 	
 	user _ validsUsers at: aClientId ifAbsent: [self error: 'Client id is invalid'].
-	(user = aPassword) ifFalse: [self error: 'Client id is invalid'].
-! !
+	(user = aPassword) ifFalse: [self error: 'Client id is invalid'].! !
 
-!Store methodsFor: 'as yet unclassified' stamp: 'masch 6/25/2017 11:05:36'!
+!Store methodsFor: 'accessing' stamp: 'masch 6/25/2017 11:05:36'!
 validsUsers: aValidsUsers
 	validsUsers _ aValidsUsers! !
 
@@ -824,20 +954,30 @@ validsUsers: aValidsUsers
 Store class
 	instanceVariableNames: ''!
 
-!Store class methodsFor: 'as yet unclassified' stamp: 'masch 6/26/2017 06:33:54'!
-withValidUsers: aValidsUsers withCatalog: aCatalog withPricesList: aPricesList withSalesBook: aSalesBook withMerchantProcessor: aMerchantProcessor withDateTime: aDateTime
-	^self new validsUsers: aValidsUsers; catalog: aCatalog; pricesList: aPricesList; salesBook: aSalesBook; merchantProcessor: aMerchantProcessor; dateTime: aDateTime; yourself! !
+!Store class methodsFor: 'instance creation' stamp: 'masch 6/27/2017 07:58:51'!
+withValidUsers: aValidsUsers withCatalog: aCatalog withPricesList: aPricesList withSalesBook: aSalesBook withMerchantProcessor: aMerchantProcessor withDateTime: aDateTime withCartOrderTimeOutDuration: aCartOrderTimeOutDuration 
+	^self new validsUsers: aValidsUsers; catalog: aCatalog; pricesList: aPricesList; salesBook: aSalesBook; merchantProcessor: aMerchantProcessor; dateTime: aDateTime; cartOrderTimeOutDuration: aCartOrderTimeOutDuration; yourself! !
 
 
 !classDefinition: #StoreTestFactory category: #TusLibros!
 Object subclass: #StoreTestFactory
-	instanceVariableNames: 'validsUsers'
+	instanceVariableNames: 'validsUsers cartOrderValidDuration'
 	classVariableNames: ''
 	poolDictionaries: ''
 	category: 'TusLibros'!
 
-!StoreTestFactory methodsFor: 'as yet unclassified' stamp: 'masch 6/26/2017 06:35:04'!
-createAStoreWithUsers
+!StoreTestFactory methodsFor: 'creating' stamp: 'masch 6/27/2017 06:17:29'!
+cartOrderValidDuration
+	^cartOrderValidDuration! !
+
+!StoreTestFactory methodsFor: 'creating' stamp: 'masch 6/27/2017 08:12:25'!
+createAStore
+	^ self createAStoreWithDateTime: self createDateTimeSimulator.
+
+! !
+
+!StoreTestFactory methodsFor: 'creating' stamp: 'masch 6/27/2017 08:11:16'!
+createAStoreWithDateTime: aDateTime
 
 	| book1 book2 catalogWithMultipleBooks |
 	
@@ -853,40 +993,22 @@ createAStoreWithUsers
 	             withPricesList: self createPriceListWithThreeItems 
 	             withSalesBook: self createSalesBook 
 	             withMerchantProcessor: self createMerchantProcessorWithANonStolenCreditcardAnd100CreditAmountSimulator
-	             withDateTime: self createDateTimeSimulator.! !
+	             withDateTime: aDateTime
+	             withCartOrderTimeOutDuration: (Duration minutes: 30).! !
 
-!StoreTestFactory methodsFor: 'as yet unclassified' stamp: 'masch 6/26/2017 06:52:44'!
-createAStoreWithUsers: aDateTimeSimulator
-
-	| book1 book2 catalogWithMultipleBooks |
-	
-	book1 := 'Un libro'.
-	book2 := 'Dos libro'.
-
-	catalogWithMultipleBooks := Set new.
-	catalogWithMultipleBooks add: book1.
-	catalogWithMultipleBooks add: book2.
-
-	^Store withValidUsers: validsUsers 
-	             withCatalog: catalogWithMultipleBooks 
-	             withPricesList: self createPriceListWithThreeItems 
-	             withSalesBook: self createSalesBook 
-	             withMerchantProcessor: self createMerchantProcessorWithANonStolenCreditcardAnd100CreditAmountSimulator
-	             withDateTime: aDateTimeSimulator.! !
-
-!StoreTestFactory methodsFor: 'as yet unclassified' stamp: 'masch 6/26/2017 06:35:29'!
+!StoreTestFactory methodsFor: 'creating' stamp: 'masch 6/26/2017 06:35:29'!
 createDateTimeSimulator
 	
 	^DateTimeSimulator new.
 ! !
 
-!StoreTestFactory methodsFor: 'as yet unclassified' stamp: 'masch 6/25/2017 18:04:25'!
+!StoreTestFactory methodsFor: 'creating' stamp: 'masch 6/25/2017 18:04:25'!
 createMerchantProcessorWithANonStolenCreditcardAnd100CreditAmountSimulator
 	
 	^MerchantProcessorSimulator withIsStolenCard: false withCreditAmount: 100.
 ! !
 
-!StoreTestFactory methodsFor: 'as yet unclassified' stamp: 'masch 6/25/2017 17:42:17'!
+!StoreTestFactory methodsFor: 'creating' stamp: 'masch 6/25/2017 17:42:17'!
 createPriceListWithThreeItems
 
 	| priceListWithThreeItems |
@@ -899,12 +1021,13 @@ createPriceListWithThreeItems
 	^priceListWithThreeItems
 ! !
 
-!StoreTestFactory methodsFor: 'as yet unclassified' stamp: 'masch 6/25/2017 17:55:16'!
+!StoreTestFactory methodsFor: 'creating' stamp: 'masch 6/25/2017 17:55:16'!
 createSalesBook
 	^SalesBook new.
 ! !
 
-!StoreTestFactory methodsFor: 'as yet unclassified' stamp: 'masch 6/25/2017 16:12:39'!
+!StoreTestFactory methodsFor: 'creating' stamp: 'masch 6/27/2017 08:05:17'!
 initialize
 	validsUsers _ Dictionary new.
-	validsUsers add: (Association key: 'clientId1' value: 'password1').! !
+	validsUsers add: (Association key: 'clientId1' value: 'password1').
+	cartOrderValidDuration _ (Duration minutes: 31).! !
